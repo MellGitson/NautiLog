@@ -26,3 +26,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Fichiers locaux non versionnés
+DirectivesetLivrables.md
