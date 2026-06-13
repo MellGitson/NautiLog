@@ -1,0 +1,11 @@
+# docker-compose.yml — NautiLog
+# À compléter lors de la phase SETUP-02 (Docker)
+
+version: '3.9'
+
+services:
+  # api:       # Symfony backend
+  # client:    # React frontend
+  # db:        # PostgreSQL
+  # nginx:     # Reverse proxy
+  # mailhog:   # Serveur mail de dev
