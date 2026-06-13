@@ -1,0 +1,24 @@
+App\Entity\User:
+    # Compte admin
+    user_admin:
+        email: admin@nautilog.fr
+        password: 'placeholder'
+        roles: ['ROLE_ADMIN']
+        licenseNumber: null
+        createdAt: '<dateTimeBetween("-6 months", "-3 months")>'
+
+    # Propriétaires (ROLE_OWNER) — mot de passe hashé par UserProcessor : Owner1234!
+    user_owner_{1..5}:
+        email: 'owner<current()>@nautilog.fr'
+        password: 'placeholder'
+        roles: ['ROLE_OWNER']
+        licenseNumber: '<bothify("??-####-??")>'
+        createdAt: '<dateTimeBetween("-4 months", "-1 month")>'
+
+    # Locataires (ROLE_RENTER) — mot de passe hashé par UserProcessor : Renter1234!
+    user_renter_{1..5}:
+        email: 'renter<current()>@nautilog.fr'
+        password: 'placeholder'
+        roles: ['ROLE_RENTER']
+        licenseNumber: null
+        createdAt: '<dateTimeBetween("-3 months", "now")>'
