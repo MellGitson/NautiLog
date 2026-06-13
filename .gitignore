@@ -27,5 +27,8 @@ Thumbs.db
 # Logs
 *.log
 
+# Variables d'environnement (secrets)
+.env
+
 # Fichiers locaux non versionnés
 DirectivesetLivrables.md
