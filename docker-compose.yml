@@ -77,3 +77,4 @@ volumes:
 networks:
   nautilog_network:
     driver: bridge
+
