@@ -1,0 +1,80 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: postgres:15-alpine
+    container_name: nautilog_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nautilog}
+      POSTGRES_USER: ${POSTGRES_USER:-nautilog}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - nautilog_network
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nautilog_api
+    restart: unless-stopped
+    volumes:
+      - ./backend:/var/www/api
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nautilog}:${POSTGRES_PASSWORD:-secret}@db:5432/${POSTGRES_DB:-nautilog}
+      APP_ENV: dev
+      APP_SECRET: ${APP_SECRET:-changeme}
+    depends_on:
+      - db
+    networks:
+      - nautilog_network
+
+  client:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nautilog_client
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - nautilog_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nautilog_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./backend/public:/var/www/api/public
+    depends_on:
+      - api
+      - client
+    networks:
+      - nautilog_network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: nautilog_mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - nautilog_network
+
+volumes:
+  db_data:
+
+networks:
+  nautilog_network:
+    driver: bridge
+
