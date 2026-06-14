@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export default function CarteBateau({ bateau }) {
   return (
     <article>
@@ -5,6 +7,7 @@ export default function CarteBateau({ bateau }) {
       <p>Type : {bateau.type}</p>
       <p>Statut : {bateau.statut}</p>
       {bateau.port && <p>Port : {bateau.port.nom}</p>}
+      <Link to={`/bateaux/${bateau.id}`}>Voir le détail</Link>
     </article>
   )
 }
