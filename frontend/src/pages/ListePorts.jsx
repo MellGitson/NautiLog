@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import CartePort from '../components/CartePort'
+import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 
 export default function ListePorts() {
+  const { deconnexion } = useAuth()
   const [ports, setPorts] = useState([])
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState(null)
@@ -16,7 +18,10 @@ export default function ListePorts() {
 
   return (
     <main>
-      <h1>Les ports</h1>
+      <header>
+        <h1>Les ports</h1>
+        <button onClick={deconnexion}>Se déconnecter</button>
+      </header>
 
       {chargement && <p>Chargement…</p>}
       {erreur && <p role="alert">{erreur}</p>}
