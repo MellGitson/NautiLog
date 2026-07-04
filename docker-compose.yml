@@ -62,7 +62,7 @@ services:
       - nautilog_network
 
   mailhog:
-    image: mailhog/mailhog:latest
+    image: axllent/mailpit:latest
     container_name: nautilog_mailhog
     restart: unless-stopped
     ports:
