@@ -13,6 +13,8 @@ export default function Accueil() {
         <Link to="/bateaux">Mes bateaux</Link>
         {' | '}
         <Link to="/ports">Les ports</Link>
+        {' | '}
+        <Link to="/trajets">Mes trajets</Link>
       </nav>
     </main>
   )
