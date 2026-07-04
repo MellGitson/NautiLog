@@ -11,6 +11,8 @@ export default function Accueil() {
         <Link to="/inscription">S'inscrire</Link>
         {' | '}
         <Link to="/bateaux">Mes bateaux</Link>
+        {' | '}
+        <Link to="/ports">Les ports</Link>
       </nav>
     </main>
   )
