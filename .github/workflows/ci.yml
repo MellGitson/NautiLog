@@ -20,6 +20,22 @@ jobs:
           extensions: pdo, pdo_pgsql, intl, zip, opcache
           tools: composer
 
+      - name: Create .env for composer scripts
+        working-directory: backend
+        run: |
+          cat > .env <<'ENVEOF'
+          APP_ENV=dev
+          APP_SECRET=ci
+          DEFAULT_URI=http://localhost
+          DATABASE_URL="postgresql://nautilog:secret@localhost:5432/nautilog?serverVersion=15&charset=utf8"
+          JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
+          JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
+          JWT_PASSPHRASE=ci
+          JWT_TOKEN_TTL=3600
+          APP_ENCRYPT_KEY=zPjQ0RK/XjUHtSKL0JeJjRIyPAmmIwBFVU/tD5mD48=
+          CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
+          ENVEOF
+
       - name: Install backend dependencies
         working-directory: backend
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -79,14 +95,28 @@ jobs:
           extensions: pdo, pdo_pgsql, intl, zip, opcache
           tools: composer
 
+      - name: Create .env for composer scripts
+        working-directory: backend
+        run: |
+          cat > .env <<'ENVEOF'
+          APP_ENV=test
+          APP_SECRET=ci
+          DEFAULT_URI=http://localhost
+          DATABASE_URL="postgresql://nautilog:secret@localhost:5432/nautilog_test?serverVersion=15&charset=utf8"
+          JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
+          JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
+          JWT_PASSPHRASE=ci
+          JWT_TOKEN_TTL=3600
+          APP_ENCRYPT_KEY=zPjQ0RK/XjUHtSKL0JeJjRIyPAmmIwBFVU/tD5mD48=
+          CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
+          ENVEOF
+
       - name: Install backend dependencies
         working-directory: backend
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Generate JWT keypair
         working-directory: backend
-        env:
-          JWT_PASSPHRASE: ${{ secrets.JWT_PASSPHRASE || '70b5c7e518326cbdb05bb87019c3af548b3060af9c4564aaf4cc7f67c42137f6' }}
         run: php bin/console lexik:jwt:generate-keypair --skip-if-exists --env=test
 
       - name: Run database migrations
@@ -108,7 +138,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Trivy filesystem scan (rapport, non-bloquant)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
