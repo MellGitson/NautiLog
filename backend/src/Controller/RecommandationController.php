@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Boat;
 use App\Entity\LogEntry;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,7 +13,8 @@ class RecommandationController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $em,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(): JsonResponse
@@ -31,17 +31,17 @@ class RecommandationController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        if (count($trajets) === 0) {
+        if (0 === count($trajets)) {
             return $this->json([
                 'message' => 'Pas encore assez de données pour générer des recommandations.',
             ]);
         }
 
         return $this->json([
-            'portsFrequents'    => $this->portsFrequents($trajets),
-            'portDepartFavori'  => $this->portDepartFavori($trajets),
-            'distanceMoyenne'   => $this->distanceMoyenne($trajets),
-            'checklistDepart'   => $this->checklistDepart(),
+            'portsFrequents' => $this->portsFrequents($trajets),
+            'portDepartFavori' => $this->portDepartFavori($trajets),
+            'distanceMoyenne' => $this->distanceMoyenne($trajets),
+            'checklistDepart' => $this->checklistDepart(),
         ]);
     }
 
@@ -51,21 +51,21 @@ class RecommandationController extends AbstractController
 
         foreach ($trajets as $trajet) {
             $port = $trajet->getArrivalPort();
-            $id   = $port->getId();
+            $id = $port->getId();
 
             if (!isset($comptage[$id])) {
                 $comptage[$id] = [
-                    'id'        => $id,
-                    'nom'       => $port->getName(),
-                    'ville'     => $port->getCity(),
+                    'id' => $id,
+                    'nom' => $port->getName(),
+                    'ville' => $port->getCity(),
                     'nbVisites' => 0,
                 ];
             }
 
-            $comptage[$id]['nbVisites']++;
+            ++$comptage[$id]['nbVisites'];
         }
 
-        usort($comptage, fn($a, $b) => $b['nbVisites'] <=> $a['nbVisites']);
+        usort($comptage, fn ($a, $b) => $b['nbVisites'] <=> $a['nbVisites']);
 
         return array_values(array_slice($comptage, 0, 3));
     }
@@ -76,25 +76,25 @@ class RecommandationController extends AbstractController
 
         foreach ($trajets as $trajet) {
             $port = $trajet->getDeparturePort();
-            $id   = $port->getId();
+            $id = $port->getId();
 
             if (!isset($comptage[$id])) {
                 $comptage[$id] = [
-                    'id'        => $id,
-                    'nom'       => $port->getName(),
-                    'ville'     => $port->getCity(),
+                    'id' => $id,
+                    'nom' => $port->getName(),
+                    'ville' => $port->getCity(),
                     'nbDepartures' => 0,
                 ];
             }
 
-            $comptage[$id]['nbDepartures']++;
+            ++$comptage[$id]['nbDepartures'];
         }
 
         if (empty($comptage)) {
             return null;
         }
 
-        usort($comptage, fn($a, $b) => $b['nbDepartures'] <=> $a['nbDepartures']);
+        usort($comptage, fn ($a, $b) => $b['nbDepartures'] <=> $a['nbDepartures']);
 
         return $comptage[0];
     }
@@ -102,8 +102,8 @@ class RecommandationController extends AbstractController
     private function distanceMoyenne(array $trajets): ?float
     {
         $distances = array_filter(
-            array_map(fn(LogEntry $l) => $l->getDistanceNm(), $trajets),
-            fn($d) => $d !== null
+            array_map(fn (LogEntry $l) => $l->getDistanceNm(), $trajets),
+            fn ($d) => null !== $d
         );
 
         if (empty($distances)) {

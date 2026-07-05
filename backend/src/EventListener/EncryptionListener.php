@@ -15,7 +15,8 @@ class EncryptionListener
 {
     public function __construct(
         private EncryptionService $encryption,
-    ) {}
+    ) {
+    }
 
     public function prePersist(LifecycleEventArgs $args): void
     {
@@ -36,7 +37,7 @@ class EncryptionListener
     {
         foreach ($this->champsChiffres($entity) as [$reflection, $property]) {
             $valeur = $property->getValue($entity);
-            if ($valeur !== null) {
+            if (null !== $valeur) {
                 $property->setValue($entity, $this->encryption->encrypt($valeur));
             }
         }
@@ -46,7 +47,7 @@ class EncryptionListener
     {
         foreach ($this->champsChiffres($entity) as [$reflection, $property]) {
             $valeur = $property->getValue($entity);
-            if ($valeur !== null) {
+            if (null !== $valeur) {
                 $property->setValue($entity, $this->encryption->decrypt($valeur));
             }
         }
@@ -55,7 +56,7 @@ class EncryptionListener
     private function champsChiffres(object $entity): array
     {
         $reflection = new \ReflectionClass($entity);
-        $champs     = [];
+        $champs = [];
 
         foreach ($reflection->getProperties() as $property) {
             if (!empty($property->getAttributes(Encrypted::class))) {

@@ -7,17 +7,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class BateauDto
 {
-    #[Assert\NotBlank(message: "Le nom du bateau est obligatoire.")]
+    #[Assert\NotBlank(message: 'Le nom du bateau est obligatoire.')]
     #[Assert\Length(
         max: 150,
-        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères."
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
     )]
     public string $nom = '';
 
-    #[Assert\NotBlank(message: "Le type de bateau est obligatoire.")]
+    #[Assert\NotBlank(message: 'Le type de bateau est obligatoire.')]
     #[Assert\Length(
         max: 100,
-        maxMessage: "Le type ne peut pas dépasser {{ limit }} caractères."
+        maxMessage: 'Le type ne peut pas dépasser {{ limit }} caractères.'
     )]
     public string $type = '';
 

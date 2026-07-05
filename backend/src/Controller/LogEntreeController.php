@@ -22,7 +22,8 @@ class LogEntreeController extends AbstractController
         private EntityManagerInterface $em,
         private ValidatorInterface $validator,
         private SerializerInterface $serializer,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'liste', methods: ['GET'])]
     public function liste(): JsonResponse
@@ -40,7 +41,7 @@ class LogEntreeController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        return $this->json(array_map(fn(LogEntry $l) => $this->serialiser($l), $trajets));
+        return $this->json(array_map(fn (LogEntry $l) => $this->serialiser($l), $trajets));
     }
 
     #[Route('/{id}', name: 'detail', methods: ['GET'])]
@@ -177,26 +178,26 @@ class LogEntreeController extends AbstractController
     private function serialiser(LogEntry $trajet): array
     {
         return [
-            'id'          => $trajet->getId(),
-            'bateau'      => [
-                'id'  => $trajet->getBoat()->getId(),
+            'id' => $trajet->getId(),
+            'bateau' => [
+                'id' => $trajet->getBoat()->getId(),
                 'nom' => $trajet->getBoat()->getName(),
             ],
-            'portDepart'  => [
-                'id'   => $trajet->getDeparturePort()->getId(),
-                'nom'  => $trajet->getDeparturePort()->getName(),
+            'portDepart' => [
+                'id' => $trajet->getDeparturePort()->getId(),
+                'nom' => $trajet->getDeparturePort()->getName(),
                 'ville' => $trajet->getDeparturePort()->getCity(),
             ],
             'portArrivee' => [
-                'id'   => $trajet->getArrivalPort()->getId(),
-                'nom'  => $trajet->getArrivalPort()->getName(),
+                'id' => $trajet->getArrivalPort()->getId(),
+                'nom' => $trajet->getArrivalPort()->getName(),
                 'ville' => $trajet->getArrivalPort()->getCity(),
             ],
-            'dateDepart'  => $trajet->getDepartureDate()->format('Y-m-d H:i:s'),
+            'dateDepart' => $trajet->getDepartureDate()->format('Y-m-d H:i:s'),
             'dateArrivee' => $trajet->getArrivalDate()?->format('Y-m-d H:i:s'),
-            'distanceNm'  => $trajet->getDistanceNm(),
-            'notes'       => $trajet->getNotes(),
-            'creeLe'      => $trajet->getCreatedAt()->format('Y-m-d H:i:s'),
+            'distanceNm' => $trajet->getDistanceNm(),
+            'notes' => $trajet->getNotes(),
+            'creeLe' => $trajet->getCreatedAt()->format('Y-m-d H:i:s'),
         ];
     }
 
@@ -206,6 +207,7 @@ class LogEntreeController extends AbstractController
         foreach ($erreurs as $erreur) {
             $messages[$erreur->getPropertyPath()] = $erreur->getMessage();
         }
+
         return ['erreurs' => $messages];
     }
 }
