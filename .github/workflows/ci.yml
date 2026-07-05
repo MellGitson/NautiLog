@@ -119,6 +119,12 @@ jobs:
         working-directory: backend
         run: php bin/console lexik:jwt:generate-keypair --skip-if-exists --env=test
 
+      - name: Create test database
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://nautilog:secret@localhost:5432/nautilog?serverVersion=15&charset=utf8
+        run: php bin/console doctrine:database:create --env=test --if-not-exists
+
       - name: Run database migrations
         working-directory: backend
         env:
