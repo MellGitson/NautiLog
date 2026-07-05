@@ -11,9 +11,9 @@ class AuthControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'email'    => 'nouveau@nautilog.fr',
+            'email' => 'nouveau@nautilog.fr',
             'password' => 'Password1234!',
-            'role'     => 'ROLE_OWNER',
+            'role' => 'ROLE_OWNER',
         ]));
 
         $this->assertResponseStatusCodeSame(201);
@@ -27,9 +27,9 @@ class AuthControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'email'    => 'pas-un-email',
+            'email' => 'pas-un-email',
             'password' => 'Password1234!',
-            'role'     => 'ROLE_OWNER',
+            'role' => 'ROLE_OWNER',
         ]));
 
         $this->assertResponseStatusCodeSame(422);
@@ -42,9 +42,9 @@ class AuthControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'email'    => 'test@nautilog.fr',
+            'email' => 'test@nautilog.fr',
             'password' => '123',
-            'role'     => 'ROLE_OWNER',
+            'role' => 'ROLE_OWNER',
         ]));
 
         $this->assertResponseStatusCodeSame(422);
@@ -55,9 +55,9 @@ class AuthControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'email'    => 'test2@nautilog.fr',
+            'email' => 'test2@nautilog.fr',
             'password' => 'Password1234!',
-            'role'     => 'ROLE_INCONNU',
+            'role' => 'ROLE_INCONNU',
         ]));
 
         $this->assertResponseStatusCodeSame(422);
@@ -69,9 +69,9 @@ class AuthControllerTest extends WebTestCase
         $client = static::createClient();
 
         $payload = json_encode([
-            'email'    => 'doublon@nautilog.fr',
+            'email' => 'doublon@nautilog.fr',
             'password' => 'Password1234!',
-            'role'     => 'ROLE_RENTER',
+            'role' => 'ROLE_RENTER',
         ]);
 
         $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], $payload);
@@ -87,13 +87,13 @@ class AuthControllerTest extends WebTestCase
         $client = static::createClient();
 
         $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'email'    => 'login@nautilog.fr',
+            'email' => 'login@nautilog.fr',
             'password' => 'Password1234!',
-            'role'     => 'ROLE_OWNER',
+            'role' => 'ROLE_OWNER',
         ]));
 
         $client->request('POST', '/api/auth/login', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'username' => 'login@nautilog.fr',
+            'email' => 'login@nautilog.fr',
             'password' => 'Password1234!',
         ]));
 
@@ -107,7 +107,7 @@ class AuthControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $client->request('POST', '/api/auth/login', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'username' => 'login@nautilog.fr',
+            'email' => 'login@nautilog.fr',
             'password' => 'mauvais',
         ]));
 

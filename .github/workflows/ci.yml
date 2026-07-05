@@ -1,0 +1,150 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main, preprod]
+  pull_request:
+    branches: [develop, main, preprod]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, pdo_pgsql, intl, zip, opcache
+          tools: composer
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Validate composer.json
+        working-directory: backend
+        run: composer validate --no-check-publish
+
+      - name: PHP syntax check
+        working-directory: backend
+        run: find src -name "*.php" -print0 | xargs -0 -n1 php -l
+
+      - name: PHP-CS-Fixer (dry-run)
+        working-directory: backend
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: ESLint
+        working-directory: frontend
+        run: npm run lint
+
+  tests-phpunit:
+    name: Tests PHPUnit
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: nautilog_test
+          POSTGRES_USER: nautilog
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, pdo_pgsql, intl, zip, opcache
+          tools: composer
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Generate JWT keypair
+        working-directory: backend
+        env:
+          JWT_PASSPHRASE: ${{ secrets.JWT_PASSPHRASE || '70b5c7e518326cbdb05bb87019c3af548b3060af9c4564aaf4cc7f67c42137f6' }}
+        run: php bin/console lexik:jwt:generate-keypair --skip-if-exists --env=test
+
+      - name: Run database migrations
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://nautilog:secret@localhost:5432/nautilog_test?serverVersion=15&charset=utf8
+        run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
+
+      - name: Run PHPUnit
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://nautilog:secret@localhost:5432/nautilog_test?serverVersion=15&charset=utf8
+        run: php bin/phpunit
+
+  trivy-scan:
+    name: Scan sécurité Trivy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trivy filesystem scan (rapport, non-bloquant)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: '0'
+          format: table
+
+  build-docker:
+    name: Build & Push Docker
+    runs-on: ubuntu-latest
+    needs: [lint, tests-phpunit]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/backend:${{ github.sha }},ghcr.io/${{ github.repository }}/backend:latest
+
+      - name: Build & push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }},ghcr.io/${{ github.repository }}/frontend:latest

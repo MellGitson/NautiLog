@@ -47,28 +47,97 @@ class LogEntry
         $this->createdAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getBoat(): ?Boat { return $this->boat; }
-    public function setBoat(?Boat $boat): static { $this->boat = $boat; return $this; }
+    public function getBoat(): ?Boat
+    {
+        return $this->boat;
+    }
 
-    public function getDeparturePort(): ?Port { return $this->departurePort; }
-    public function setDeparturePort(?Port $departurePort): static { $this->departurePort = $departurePort; return $this; }
+    public function setBoat(?Boat $boat): static
+    {
+        $this->boat = $boat;
 
-    public function getArrivalPort(): ?Port { return $this->arrivalPort; }
-    public function setArrivalPort(?Port $arrivalPort): static { $this->arrivalPort = $arrivalPort; return $this; }
+        return $this;
+    }
 
-    public function getDepartureDate(): ?\DateTimeImmutable { return $this->departureDate; }
-    public function setDepartureDate(\DateTimeImmutable $departureDate): static { $this->departureDate = $departureDate; return $this; }
+    public function getDeparturePort(): ?Port
+    {
+        return $this->departurePort;
+    }
 
-    public function getArrivalDate(): ?\DateTimeImmutable { return $this->arrivalDate; }
-    public function setArrivalDate(?\DateTimeImmutable $arrivalDate): static { $this->arrivalDate = $arrivalDate; return $this; }
+    public function setDeparturePort(?Port $departurePort): static
+    {
+        $this->departurePort = $departurePort;
 
-    public function getDistanceNm(): ?float { return $this->distanceNm; }
-    public function setDistanceNm(?float $distanceNm): static { $this->distanceNm = $distanceNm; return $this; }
+        return $this;
+    }
 
-    public function getNotes(): ?string { return $this->notes; }
-    public function setNotes(?string $notes): static { $this->notes = $notes; return $this; }
+    public function getArrivalPort(): ?Port
+    {
+        return $this->arrivalPort;
+    }
 
-    public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
+    public function setArrivalPort(?Port $arrivalPort): static
+    {
+        $this->arrivalPort = $arrivalPort;
+
+        return $this;
+    }
+
+    public function getDepartureDate(): ?\DateTimeImmutable
+    {
+        return $this->departureDate;
+    }
+
+    public function setDepartureDate(\DateTimeImmutable $departureDate): static
+    {
+        $this->departureDate = $departureDate;
+
+        return $this;
+    }
+
+    public function getArrivalDate(): ?\DateTimeImmutable
+    {
+        return $this->arrivalDate;
+    }
+
+    public function setArrivalDate(?\DateTimeImmutable $arrivalDate): static
+    {
+        $this->arrivalDate = $arrivalDate;
+
+        return $this;
+    }
+
+    public function getDistanceNm(): ?float
+    {
+        return $this->distanceNm;
+    }
+
+    public function setDistanceNm(?float $distanceNm): static
+    {
+        $this->distanceNm = $distanceNm;
+
+        return $this;
+    }
+
+    public function getNotes(): ?string
+    {
+        return $this->notes;
+    }
+
+    public function setNotes(?string $notes): static
+    {
+        $this->notes = $notes;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }

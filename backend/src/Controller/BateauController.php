@@ -21,13 +21,14 @@ class BateauController extends AbstractController
         private EntityManagerInterface $em,
         private ValidatorInterface $validator,
         private SerializerInterface $serializer,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'liste', methods: ['GET'])]
     public function liste(): JsonResponse
     {
         $bateaux = $this->em->getRepository(Boat::class)->findAll();
-        $donnees = array_map(fn(Boat $bateau) => $this->serialiser($bateau), $bateaux);
+        $donnees = array_map(fn (Boat $bateau) => $this->serialiser($bateau), $bateaux);
 
         return $this->json($donnees, Response::HTTP_OK);
     }
@@ -135,18 +136,18 @@ class BateauController extends AbstractController
     private function serialiser(Boat $bateau): array
     {
         return [
-            'id'          => $bateau->getId(),
-            'nom'         => $bateau->getName(),
-            'type'        => $bateau->getType(),
-            'statut'      => $bateau->getStatus(),
-            'creeLe'      => $bateau->getCreatedAt()?->format('Y-m-d H:i:s'),
+            'id' => $bateau->getId(),
+            'nom' => $bateau->getName(),
+            'type' => $bateau->getType(),
+            'statut' => $bateau->getStatus(),
+            'creeLe' => $bateau->getCreatedAt()?->format('Y-m-d H:i:s'),
             'proprietaire' => [
-                'id'    => $bateau->getOwner()?->getId(),
+                'id' => $bateau->getOwner()?->getId(),
                 'email' => $bateau->getOwner()?->getEmail(),
             ],
             'port' => $bateau->getPort() ? [
-                'id'   => $bateau->getPort()->getId(),
-                'nom'  => $bateau->getPort()->getName(),
+                'id' => $bateau->getPort()->getId(),
+                'nom' => $bateau->getPort()->getName(),
                 'ville' => $bateau->getPort()->getCity(),
             ] : null,
         ];
@@ -158,6 +159,7 @@ class BateauController extends AbstractController
         foreach ($erreurs as $erreur) {
             $messages[$erreur->getPropertyPath()] = $erreur->getMessage();
         }
+
         return ['erreurs' => $messages];
     }
 }
