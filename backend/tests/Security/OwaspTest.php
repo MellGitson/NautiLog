@@ -10,7 +10,11 @@ class OwaspTest extends WebTestCase
     public function testAccesNonAuthentifieRoutesBateaux(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/api/bateaux');
+        $client->request('POST', '/api/bateaux', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'nom' => 'Bateau Test',
+            'type' => 'Voilier',
+            'statut' => 'DISPONIBLE',
+        ]));
 
         $this->assertResponseStatusCodeSame(401);
     }
@@ -18,7 +22,13 @@ class OwaspTest extends WebTestCase
     public function testAccesNonAuthentifieRoutesPorts(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/api/ports/1');
+        $client->request('POST', '/api/ports', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'nom' => 'Port Test',
+            'ville' => 'Testville',
+            'latitude' => 43.0,
+            'longitude' => 5.0,
+            'capacite' => 10,
+        ]));
 
         $this->assertResponseStatusCodeSame(401);
     }
@@ -36,9 +46,9 @@ class OwaspTest extends WebTestCase
     {
         $client = static::createClient();
         $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'email'    => "' OR '1'='1'; DROP TABLE users; --",
+            'email' => "' OR '1'='1'; DROP TABLE users; --",
             'password' => 'Password1234!',
-            'role'     => 'ROLE_OWNER',
+            'role' => 'ROLE_OWNER',
         ]));
 
         $this->assertNotSame(500, $client->getResponse()->getStatusCode());
@@ -48,7 +58,7 @@ class OwaspTest extends WebTestCase
     {
         $client = static::createClient();
         $client->request('POST', '/api/auth/login', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'username' => "admin'--",
+            'email' => "admin'--",
             'password' => "' OR '1'='1",
         ]));
 
@@ -62,13 +72,13 @@ class OwaspTest extends WebTestCase
 
         // Inscription + connexion pour obtenir un token
         $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'email'    => 'xss-test@nautilog.fr',
+            'email' => 'xss-test@nautilog.fr',
             'password' => 'Password1234!',
-            'role'     => 'ROLE_OWNER',
+            'role' => 'ROLE_OWNER',
         ]));
 
         $client->request('POST', '/api/auth/login', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'username' => 'xss-test@nautilog.fr',
+            'email' => 'xss-test@nautilog.fr',
             'password' => 'Password1234!',
         ]));
 
@@ -78,11 +88,11 @@ class OwaspTest extends WebTestCase
         $payload = '<script>alert("xss")</script>';
 
         $client->request('POST', '/api/bateaux', [], [], [
-            'CONTENT_TYPE'  => 'application/json',
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ], json_encode([
-            'nom'    => $payload,
-            'type'   => 'Voilier',
+            'nom' => $payload,
+            'type' => 'Voilier',
             'statut' => 'DISPONIBLE',
         ]));
 

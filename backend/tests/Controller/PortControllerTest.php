@@ -2,21 +2,34 @@
 
 namespace App\Tests\Controller;
 
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class PortControllerTest extends WebTestCase
 {
+    // ROLE_ADMIN n'est pas créable via /api/auth/register (accès public volontairement
+    // restreint à ROLE_OWNER/ROLE_RENTER), donc l'utilisateur admin est créé directement
+    // en base pour ces tests.
     private function creerAdminEtToken(mixed $client): string
     {
-        $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'email'    => 'admin_port@nautilog.fr',
-            'password' => 'Admin1234!',
-            'role'     => 'ROLE_ADMIN',
-        ]));
+        $email = 'admin_port_'.uniqid().'@nautilog.fr';
+        $password = 'Admin1234!';
+
+        $container = static::getContainer();
+        $em = $container->get('doctrine')->getManager();
+        $hasher = $container->get(UserPasswordHasherInterface::class);
+
+        $admin = new User();
+        $admin->setEmail($email);
+        $admin->setRoles(['ROLE_ADMIN']);
+        $admin->setPassword($hasher->hashPassword($admin, $password));
+        $em->persist($admin);
+        $em->flush();
 
         $client->request('POST', '/api/auth/login', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'username' => 'admin_port@nautilog.fr',
-            'password' => 'Admin1234!',
+            'email' => $email,
+            'password' => $password,
         ]));
 
         return json_decode($client->getResponse()->getContent(), true)['token'];
@@ -48,14 +61,14 @@ class PortControllerTest extends WebTestCase
         $token = $this->creerAdminEtToken($client);
 
         $client->request('POST', '/api/ports', [], [], [
-            'CONTENT_TYPE'       => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer $token",
         ], json_encode([
-            'nom'       => 'Port de Test',
-            'ville'     => 'Testville',
-            'latitude'  => 43.2965,
+            'nom' => 'Port de Test',
+            'ville' => 'Testville',
+            'latitude' => 43.2965,
             'longitude' => 5.3698,
-            'capacite'  => 50,
+            'capacite' => 50,
         ]));
 
         $this->assertResponseStatusCodeSame(201);
@@ -69,11 +82,11 @@ class PortControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $client->request('POST', '/api/ports', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'nom'       => 'Port Fantôme',
-            'ville'     => 'Nulle Part',
-            'latitude'  => 0.0,
+            'nom' => 'Port Fantôme',
+            'ville' => 'Nulle Part',
+            'latitude' => 0.0,
             'longitude' => 0.0,
-            'capacite'  => 10,
+            'capacite' => 10,
         ]));
 
         $this->assertResponseStatusCodeSame(401);
@@ -86,14 +99,14 @@ class PortControllerTest extends WebTestCase
         $token = $this->creerAdminEtToken($client);
 
         $client->request('POST', '/api/ports', [], [], [
-            'CONTENT_TYPE'       => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer $token",
         ], json_encode([
-            'nom'       => '',
-            'ville'     => 'Testville',
-            'latitude'  => 999.0,
+            'nom' => '',
+            'ville' => 'Testville',
+            'latitude' => 999.0,
             'longitude' => 5.3698,
-            'capacite'  => -5,
+            'capacite' => -5,
         ]));
 
         $this->assertResponseStatusCodeSame(422);
@@ -108,27 +121,27 @@ class PortControllerTest extends WebTestCase
         $token = $this->creerAdminEtToken($client);
 
         $client->request('POST', '/api/ports', [], [], [
-            'CONTENT_TYPE'       => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer $token",
         ], json_encode([
-            'nom'       => 'Port Original',
-            'ville'     => 'Marseille',
-            'latitude'  => 43.2965,
+            'nom' => 'Port Original',
+            'ville' => 'Marseille',
+            'latitude' => 43.2965,
             'longitude' => 5.3698,
-            'capacite'  => 100,
+            'capacite' => 100,
         ]));
 
         $id = json_decode($client->getResponse()->getContent(), true)['id'];
 
         $client->request('PUT', "/api/ports/$id", [], [], [
-            'CONTENT_TYPE'       => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer $token",
         ], json_encode([
-            'nom'       => 'Port Modifié',
-            'ville'     => 'Marseille',
-            'latitude'  => 43.2965,
+            'nom' => 'Port Modifié',
+            'ville' => 'Marseille',
+            'latitude' => 43.2965,
             'longitude' => 5.3698,
-            'capacite'  => 200,
+            'capacite' => 200,
         ]));
 
         $this->assertResponseStatusCodeSame(200);
@@ -144,14 +157,14 @@ class PortControllerTest extends WebTestCase
         $token = $this->creerAdminEtToken($client);
 
         $client->request('POST', '/api/ports', [], [], [
-            'CONTENT_TYPE'       => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer $token",
         ], json_encode([
-            'nom'       => 'Port à Supprimer',
-            'ville'     => 'Lyon',
-            'latitude'  => 45.7640,
+            'nom' => 'Port à Supprimer',
+            'ville' => 'Lyon',
+            'latitude' => 45.7640,
             'longitude' => 4.8357,
-            'capacite'  => 30,
+            'capacite' => 30,
         ]));
 
         $id = json_decode($client->getResponse()->getContent(), true)['id'];

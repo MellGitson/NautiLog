@@ -9,13 +9,13 @@ class BateauControllerTest extends WebTestCase
     private function creerUtilisateurEtToken(mixed $client, string $email, string $role): string
     {
         $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'email'    => $email,
+            'email' => $email,
             'password' => 'Password1234!',
-            'role'     => $role,
+            'role' => $role,
         ]));
 
         $client->request('POST', '/api/auth/login', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'username' => $email,
+            'email' => $email,
             'password' => 'Password1234!',
         ]));
 
@@ -39,11 +39,11 @@ class BateauControllerTest extends WebTestCase
         $token = $this->creerUtilisateurEtToken($client, 'owner_bateau@nautilog.fr', 'ROLE_OWNER');
 
         $client->request('POST', '/api/bateaux', [], [], [
-            'CONTENT_TYPE'  => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer $token",
         ], json_encode([
-            'nom'    => 'Mon Voilier',
-            'type'   => 'Voilier',
+            'nom' => 'Mon Voilier',
+            'type' => 'Voilier',
             'statut' => 'DISPONIBLE',
         ]));
 
@@ -57,8 +57,8 @@ class BateauControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $client->request('POST', '/api/bateaux', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'nom'    => 'Bateau Fantôme',
-            'type'   => 'Yacht',
+            'nom' => 'Bateau Fantôme',
+            'type' => 'Yacht',
             'statut' => 'DISPONIBLE',
         ]));
 
@@ -72,11 +72,11 @@ class BateauControllerTest extends WebTestCase
         $token = $this->creerUtilisateurEtToken($client, 'renter_bateau@nautilog.fr', 'ROLE_RENTER');
 
         $client->request('POST', '/api/bateaux', [], [], [
-            'CONTENT_TYPE'       => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer $token",
         ], json_encode([
-            'nom'    => 'Tentative',
-            'type'   => 'Voilier',
+            'nom' => 'Tentative',
+            'type' => 'Voilier',
             'statut' => 'DISPONIBLE',
         ]));
 
@@ -90,11 +90,11 @@ class BateauControllerTest extends WebTestCase
         $token = $this->creerUtilisateurEtToken($client, 'owner_invalide@nautilog.fr', 'ROLE_OWNER');
 
         $client->request('POST', '/api/bateaux', [], [], [
-            'CONTENT_TYPE'       => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer $token",
         ], json_encode([
-            'nom'    => '',
-            'type'   => '',
+            'nom' => '',
+            'type' => '',
             'statut' => 'STATUT_INEXISTANT',
         ]));
 
@@ -117,11 +117,11 @@ class BateauControllerTest extends WebTestCase
         $token = $this->creerUtilisateurEtToken($client, 'owner_delete@nautilog.fr', 'ROLE_OWNER');
 
         $client->request('POST', '/api/bateaux', [], [], [
-            'CONTENT_TYPE'       => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer $token",
         ], json_encode([
-            'nom'    => 'À Supprimer',
-            'type'   => 'Vedette',
+            'nom' => 'À Supprimer',
+            'type' => 'Vedette',
             'statut' => 'DISPONIBLE',
         ]));
 
@@ -142,11 +142,11 @@ class BateauControllerTest extends WebTestCase
         $tokenB = $this->creerUtilisateurEtToken($client, 'owner_b@nautilog.fr', 'ROLE_OWNER');
 
         $client->request('POST', '/api/bateaux', [], [], [
-            'CONTENT_TYPE'       => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer $tokenA",
         ], json_encode([
-            'nom'    => 'Bateau de A',
-            'type'   => 'Voilier',
+            'nom' => 'Bateau de A',
+            'type' => 'Voilier',
             'statut' => 'DISPONIBLE',
         ]));
 
