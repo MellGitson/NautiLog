@@ -15,35 +15,45 @@ export default function DetailBateau() {
       .finally(() => setChargement(false))
   }, [id])
 
-  if (chargement) return <p>Chargement…</p>
-  if (erreur)     return <p role="alert">{erreur}</p>
+  if (chargement) return <p className="text-ocean-600">Chargement…</p>
+  if (erreur)     return <p role="alert" className="font-medium text-coral-600">{erreur}</p>
 
   return (
-    <main>
-      <Link to="/bateaux">← Retour à la liste</Link>
+    <main className="mx-auto max-w-2xl">
+      <Link to="/bateaux" className="text-sm font-medium">← Retour à la liste</Link>
 
-      <h1>{bateau.nom}</h1>
+      <div className="card mt-4">
+        <h1>{bateau.nom}</h1>
 
-      <dl>
-        <dt>Type</dt>
-        <dd>{bateau.type}</dd>
+        <dl className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <dt className="text-sm font-medium text-ocean-500">Type</dt>
+            <dd className="text-ocean-900">{bateau.type}</dd>
+          </div>
 
-        <dt>Statut</dt>
-        <dd>{bateau.statut}</dd>
+          <div>
+            <dt className="text-sm font-medium text-ocean-500">Statut</dt>
+            <dd className="text-ocean-900">{bateau.statut}</dd>
+          </div>
 
-        <dt>Créé le</dt>
-        <dd>{bateau.creeLe}</dd>
+          <div>
+            <dt className="text-sm font-medium text-ocean-500">Créé le</dt>
+            <dd className="text-ocean-900">{bateau.creeLe}</dd>
+          </div>
 
-        <dt>Propriétaire</dt>
-        <dd>{bateau.proprietaire.email}</dd>
+          <div>
+            <dt className="text-sm font-medium text-ocean-500">Propriétaire</dt>
+            <dd className="text-ocean-900">{bateau.proprietaire.email}</dd>
+          </div>
 
-        {bateau.port && (
-          <>
-            <dt>Port</dt>
-            <dd>{bateau.port.nom} — {bateau.port.ville}</dd>
-          </>
-        )}
-      </dl>
+          {bateau.port && (
+            <div>
+              <dt className="text-sm font-medium text-ocean-500">Port</dt>
+              <dd className="text-ocean-900">{bateau.port.nom} — {bateau.port.ville}</dd>
+            </div>
+          )}
+        </dl>
+      </div>
     </main>
   )
 }
