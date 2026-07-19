@@ -5,7 +5,6 @@ App\Entity\Boat:
         status: 'DISPONIBLE'
         owner: '@user_owner_<randomElement([1, 2, 3, 4, 5])>'
         port: '@port_<randomElement([marseille, nice, toulon, cannes, sete])>'
-        createdAt: '<dateTimeBetween("-2 months", "-1 month")>'
 
     boat_{6..10}:
         name: '<randomElement(["Le Corsaire", "Tempête", "Blue Dream", "La Sirène", "Aventure", "Liberté", "Ocean Star", "Tramontane", "Cap Nord", "La Goélette"])> <current()>'
@@ -13,7 +12,6 @@ App\Entity\Boat:
         status: 'LOUÉ'
         owner: '@user_owner_<randomElement([1, 2, 3, 4, 5])>'
         port: '@port_<randomElement([brest, bordeaux, lorient])>'
-        createdAt: '<dateTimeBetween("-3 months", "-2 months")>'
 
     boat_{11..15}:
         name: '<randomElement(["Vieux Loup", "Alizé", "La Caravelle", "Marin d''Eau Douce", "Typhon", "Swell", "Pacific", "Aquila", "Mercure", "Atlas"])> <current()>'
@@ -21,4 +19,3 @@ App\Entity\Boat:
         status: 'EN_RÉPARATION'
         owner: '@user_owner_<randomElement([1, 2, 3, 4, 5])>'
         port: null
-        createdAt: '<dateTimeBetween("-4 months", "-3 months")>'

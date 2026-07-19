@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 import CartePort from '../components/CartePort'
-import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 
 export default function ListePorts() {
-  const { deconnexion } = useAuth()
   const [ports, setPorts] = useState([])
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState(null)
@@ -18,19 +16,18 @@ export default function ListePorts() {
 
   return (
     <main>
-      <header>
+      <header className="mb-8">
         <h1>Les ports</h1>
-        <button onClick={deconnexion}>Se déconnecter</button>
       </header>
 
-      {chargement && <p>Chargement…</p>}
-      {erreur && <p role="alert">{erreur}</p>}
+      {chargement && <p className="text-ocean-600">Chargement…</p>}
+      {erreur && <p role="alert" className="font-medium text-coral-600">{erreur}</p>}
 
       {!chargement && !erreur && ports.length === 0 && (
-        <p>Aucun port disponible.</p>
+        <p className="text-ocean-600">Aucun port disponible.</p>
       )}
 
-      <section>
+      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {ports.map((port) => (
           <CartePort key={port.id} port={port} />
         ))}
