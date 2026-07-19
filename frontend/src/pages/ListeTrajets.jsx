@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
 import CarteTrajet from '../components/CarteTrajet'
 import api from '../services/api'
 
 export default function ListeTrajets() {
-  const { deconnexion } = useAuth()
   const [trajets, setTrajets] = useState([])
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState(null)
@@ -19,22 +17,19 @@ export default function ListeTrajets() {
 
   return (
     <main>
-      <header>
+      <header className="mb-8 flex items-center justify-between">
         <h1>Mes trajets</h1>
-        <div>
-          <Link to="/trajets/nouveau">Nouveau trajet</Link>
-          <button onClick={deconnexion}>Se déconnecter</button>
-        </div>
+        <Link to="/trajets/nouveau" className="btn-accent">Nouveau trajet</Link>
       </header>
 
-      {chargement && <p>Chargement…</p>}
-      {erreur && <p role="alert">{erreur}</p>}
+      {chargement && <p className="text-ocean-600">Chargement…</p>}
+      {erreur && <p role="alert" className="font-medium text-coral-600">{erreur}</p>}
 
       {!chargement && !erreur && trajets.length === 0 && (
-        <p>Aucun trajet enregistré.</p>
+        <p className="text-ocean-600">Aucun trajet enregistré.</p>
       )}
 
-      <section>
+      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {trajets.map((trajet) => (
           <CarteTrajet key={trajet.id} trajet={trajet} />
         ))}
