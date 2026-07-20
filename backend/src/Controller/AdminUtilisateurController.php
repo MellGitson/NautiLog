@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Dto\AdminUtilisateurDto;
 use App\Dto\UtilisateurRoleDto;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -66,6 +67,44 @@ class AdminUtilisateurController extends AbstractController
         }
 
         $utilisateur->setRoles([$dto->role]);
+        $this->em->flush();
+
+        return $this->json($this->serialiser($utilisateur), Response::HTTP_OK);
+    }
+
+    #[Route('/{id}', name: 'modifier', methods: ['PATCH'])]
+    public function modifier(int $id, Request $request): JsonResponse
+    {
+        $utilisateur = $this->em->getRepository(User::class)->find($id);
+
+        if (!$utilisateur) {
+            return $this->json(['erreur' => 'Utilisateur introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $dto = $this->serializer->deserialize($request->getContent(), AdminUtilisateurDto::class, 'json');
+
+        $erreurs = $this->validator->validate($dto);
+        if (count($erreurs) > 0) {
+            $messages = [];
+            foreach ($erreurs as $erreur) {
+                $messages[$erreur->getPropertyPath()] = $erreur->getMessage();
+            }
+
+            return $this->json(['errors' => $messages], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        if ($dto->email !== $utilisateur->getEmail()) {
+            $existant = $this->em->getRepository(User::class)->findOneBy(['email' => $dto->email]);
+            if ($existant) {
+                return $this->json(['errors' => ['email' => 'Cet email est déjà utilisé.']], Response::HTTP_CONFLICT);
+            }
+        }
+
+        $utilisateur->setEmail($dto->email);
+        $utilisateur->setFirstName($dto->firstName);
+        $utilisateur->setLastName($dto->lastName);
+        $utilisateur->setPhone($dto->phone);
+
         $this->em->flush();
 
         return $this->json($this->serialiser($utilisateur), Response::HTTP_OK);

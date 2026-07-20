@@ -11,7 +11,11 @@ import DetailPort from './pages/DetailPort'
 import ListeTrajets from './pages/ListeTrajets'
 import DetailTrajet from './pages/DetailTrajet'
 import NouveauTrajet from './pages/NouveauTrajet'
-import Admin from './pages/Admin'
+import AdminLayout from './components/AdminLayout'
+import AdminOverview from './pages/AdminOverview'
+import AdminFlotte from './pages/AdminFlotte'
+import AdminPorts from './pages/AdminPorts'
+import AdminUtilisateurs from './pages/AdminUtilisateurs'
 import Profil from './pages/Profil'
 import NotFound from './pages/NotFound'
 
@@ -19,23 +23,43 @@ export default function App() {
   return (
     <>
       <NavBar />
-      <div id="contenu-principal" className="mx-auto max-w-5xl px-6 py-10">
-        <Routes>
-          <Route path="/"            element={<Accueil />} />
-          <Route path="/connexion"   element={<Connexion />} />
-          <Route path="/inscription" element={<Inscription />} />
-          <Route path="/bateaux"          element={<RouteProtegee><ListeBateaux /></RouteProtegee>} />
-          <Route path="/bateaux/:id"      element={<RouteProtegee><DetailBateau /></RouteProtegee>} />
-          <Route path="/ports"            element={<RouteProtegee><ListePorts /></RouteProtegee>} />
-          <Route path="/ports/:id"        element={<RouteProtegee><DetailPort /></RouteProtegee>} />
-          <Route path="/trajets"          element={<RouteProtegee><ListeTrajets /></RouteProtegee>} />
-          <Route path="/trajets/nouveau"  element={<RouteProtegee><NouveauTrajet /></RouteProtegee>} />
-          <Route path="/trajets/:id"      element={<RouteProtegee><DetailTrajet /></RouteProtegee>} />
-          <Route path="/admin"            element={<RouteProtegee role="ROLE_ADMIN"><Admin /></RouteProtegee>} />
-          <Route path="/profil"           element={<RouteProtegee><Profil /></RouteProtegee>} />
-          <Route path="*"                 element={<NotFound />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route
+          path="/admin/*"
+          element={
+            <RouteProtegee role="ROLE_ADMIN">
+              <AdminLayout />
+            </RouteProtegee>
+          }
+        >
+          <Route index element={<AdminOverview />} />
+          <Route path="flotte" element={<AdminFlotte />} />
+          <Route path="ports" element={<AdminPorts />} />
+          <Route path="utilisateurs" element={<AdminUtilisateurs />} />
+        </Route>
+
+        <Route
+          path="*"
+          element={
+            <div id="contenu-principal" className="mx-auto max-w-5xl px-6 py-10">
+              <Routes>
+                <Route path="/"            element={<Accueil />} />
+                <Route path="/connexion"   element={<Connexion />} />
+                <Route path="/inscription" element={<Inscription />} />
+                <Route path="/bateaux"          element={<RouteProtegee><ListeBateaux /></RouteProtegee>} />
+                <Route path="/bateaux/:id"      element={<RouteProtegee><DetailBateau /></RouteProtegee>} />
+                <Route path="/ports"            element={<RouteProtegee><ListePorts /></RouteProtegee>} />
+                <Route path="/ports/:id"        element={<RouteProtegee><DetailPort /></RouteProtegee>} />
+                <Route path="/trajets"          element={<RouteProtegee><ListeTrajets /></RouteProtegee>} />
+                <Route path="/trajets/nouveau"  element={<RouteProtegee><NouveauTrajet /></RouteProtegee>} />
+                <Route path="/trajets/:id"      element={<RouteProtegee><DetailTrajet /></RouteProtegee>} />
+                <Route path="/profil"           element={<RouteProtegee><Profil /></RouteProtegee>} />
+                <Route path="*"                 element={<NotFound />} />
+              </Routes>
+            </div>
+          }
+        />
+      </Routes>
     </>
   )
 }
