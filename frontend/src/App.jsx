@@ -17,7 +17,7 @@ export default function App() {
   return (
     <>
       <NavBar />
-      <div className="mx-auto max-w-5xl px-6 py-10">
+      <div id="contenu-principal" className="mx-auto max-w-5xl px-6 py-10">
         <Routes>
           <Route path="/"            element={<Accueil />} />
           <Route path="/connexion"   element={<Connexion />} />

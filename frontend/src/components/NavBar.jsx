@@ -1,22 +1,33 @@
+import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function NavBar() {
   const { estConnecte, deconnexion } = useAuth()
+  const [menuOuvert, setMenuOuvert] = useState(false)
 
   const lien = ({ isActive }) =>
     `text-sm font-medium transition-colors ${
       isActive ? 'text-coral-500' : 'text-ocean-700 hover:text-coral-500'
     }`
 
+  const fermerMenu = () => setMenuOuvert(false)
+
   return (
     <header className="sticky top-0 z-10 border-b border-ocean-100 bg-white/80 backdrop-blur-md">
+      <a
+        href="#contenu-principal"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ocean-700 focus:px-4 focus:py-2 focus:text-white"
+      >
+        Aller au contenu principal
+      </a>
+
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold text-ocean-800 hover:text-ocean-800">
+        <Link to="/" onClick={fermerMenu} className="flex items-center gap-2 font-display text-xl font-bold text-ocean-800 hover:text-ocean-800">
           <span aria-hidden="true">⚓</span> NautiLog
         </Link>
 
-        <nav className="flex items-center gap-6">
+        <nav className="hidden items-center gap-6 sm:flex">
           {estConnecte ? (
             <>
               <NavLink to="/bateaux" className={lien}>Bateaux</NavLink>
@@ -35,7 +46,42 @@ export default function NavBar() {
             </>
           )}
         </nav>
+
+        <button
+          type="button"
+          onClick={() => setMenuOuvert((o) => !o)}
+          aria-expanded={menuOuvert}
+          aria-label={menuOuvert ? 'Fermer le menu' : 'Ouvrir le menu'}
+          className="flex h-10 w-10 items-center justify-center rounded-full text-ocean-700 hover:bg-ocean-50 sm:hidden"
+        >
+          <span aria-hidden="true" className="text-2xl leading-none">{menuOuvert ? '✕' : '☰'}</span>
+        </button>
       </div>
+
+      {menuOuvert && (
+        <nav className="flex flex-col gap-1 border-t border-ocean-100 bg-white/95 px-6 py-4 sm:hidden">
+          {estConnecte ? (
+            <>
+              <NavLink to="/bateaux" className={lien} onClick={fermerMenu}>Bateaux</NavLink>
+              <NavLink to="/ports" className={`${lien} py-2`} onClick={fermerMenu}>Ports</NavLink>
+              <NavLink to="/trajets" className={`${lien} py-2`} onClick={fermerMenu}>Trajets</NavLink>
+              <button
+                onClick={() => { deconnexion(); fermerMenu() }}
+                className="btn-ghost mt-2 !px-4 !py-1.5 text-sm"
+              >
+                Se déconnecter
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink to="/connexion" className={`${lien} py-2`} onClick={fermerMenu}>Se connecter</NavLink>
+              <Link to="/inscription" onClick={fermerMenu} className="btn-accent mt-2 !px-4 !py-1.5 text-sm">
+                S'inscrire
+              </Link>
+            </>
+          )}
+        </nav>
+      )}
     </header>
   )
 }
