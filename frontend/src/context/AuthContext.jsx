@@ -3,6 +3,15 @@ import api from '../services/api'
 
 const AuthContext = createContext(null)
 
+function rolesDepuisToken(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.roles ?? []
+  } catch {
+    return []
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
@@ -15,12 +24,12 @@ export function AuthProvider({ children }) {
 
   const connexion = useCallback(async (email, motDePasse) => {
     const { data } = await api.post('/auth/login', {
-      username: email,
+      email,
       password: motDePasse,
     })
     localStorage.setItem('token', data.token)
 
-    const profil = { email, roles: data.roles ?? [] }
+    const profil = { email, roles: rolesDepuisToken(data.token) }
     localStorage.setItem('user', JSON.stringify(profil))
     setUser(profil)
   }, [])

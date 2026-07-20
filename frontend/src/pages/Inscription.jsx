@@ -18,54 +18,58 @@ export default function Inscription() {
   })
 
   return (
-    <main>
-      <h1>Inscription</h1>
+    <main className="mx-auto max-w-md">
+      <div className="card">
+        <h1 className="text-center">Inscription</h1>
 
-      <form onSubmit={soumettre} noValidate>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            value={valeurs.email}
-            onChange={gererChangement}
-            required
-            autoComplete="email"
-          />
-        </div>
+        <form onSubmit={soumettre} noValidate className="mt-6 space-y-4">
+          <div>
+            <label htmlFor="email" className="label-field">Email</label>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              value={valeurs.email}
+              onChange={gererChangement}
+              required
+              autoComplete="email"
+              className="input-field"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="motDePasse">Mot de passe</label>
-          <input
-            id="motDePasse"
-            type="password"
-            name="motDePasse"
-            value={valeurs.motDePasse}
-            onChange={gererChangement}
-            required
-            autoComplete="new-password"
-          />
-        </div>
+          <div>
+            <label htmlFor="motDePasse" className="label-field">Mot de passe</label>
+            <input
+              id="motDePasse"
+              type="password"
+              name="motDePasse"
+              value={valeurs.motDePasse}
+              onChange={gererChangement}
+              required
+              autoComplete="new-password"
+              className="input-field"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="role">Je suis</label>
-          <select id="role" name="role" value={valeurs.role} onChange={gererChangement}>
-            <option value="ROLE_RENTER">Locataire</option>
-            <option value="ROLE_OWNER">Propriétaire</option>
-          </select>
-        </div>
+          <div>
+            <label htmlFor="role" className="label-field">Je suis</label>
+            <select id="role" name="role" value={valeurs.role} onChange={gererChangement} className="input-field">
+              <option value="ROLE_RENTER">Locataire</option>
+              <option value="ROLE_OWNER">Propriétaire</option>
+            </select>
+          </div>
 
-        {erreur && <p role="alert">{erreur}</p>}
+          {erreur && <p role="alert" className="text-sm font-medium text-coral-600">{erreur}</p>}
 
-        <button type="submit" disabled={chargement}>
-          {chargement ? 'Inscription…' : "S'inscrire"}
-        </button>
-      </form>
+          <button type="submit" disabled={chargement} className="btn-primary w-full">
+            {chargement ? 'Inscription…' : "S'inscrire"}
+          </button>
+        </form>
 
-      <p>
-        Déjà un compte ? <Link to="/connexion">Se connecter</Link>
-      </p>
+        <p className="mt-6 text-center text-sm text-ocean-600">
+          Déjà un compte ? <Link to="/connexion" className="font-medium">Se connecter</Link>
+        </p>
+      </div>
     </main>
   )
 }

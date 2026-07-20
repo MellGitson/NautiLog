@@ -9,8 +9,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class UserProcessor implements ProcessorInterface
 {
     public function __construct(
-        private UserPasswordHasherInterface $hasher
-    ) {}
+        private UserPasswordHasherInterface $hasher,
+    ) {
+    }
 
     public function preProcess(string $id, object $object): void
     {
@@ -19,14 +20,16 @@ class UserProcessor implements ProcessorInterface
         }
 
         $plainPassword = match (true) {
-            str_contains($id, 'admin')  => 'Admin1234!',
-            str_contains($id, 'owner')  => 'Owner1234!',
+            str_contains($id, 'admin') => 'Admin1234!',
+            str_contains($id, 'owner') => 'Owner1234!',
             str_contains($id, 'renter') => 'Renter1234!',
-            default                     => 'Password1234!',
+            default => 'Password1234!',
         };
 
         $object->setPassword($this->hasher->hashPassword($object, $plainPassword));
     }
 
-    public function postProcess(string $id, object $object): void {}
+    public function postProcess(string $id, object $object): void
+    {
+    }
 }

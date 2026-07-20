@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useAuth } from '../context/AuthContext'
 import CarteBateau from '../components/CarteBateau'
 import api from '../services/api'
 
 export default function ListeBateaux() {
-  const { deconnexion } = useAuth()
   const [bateaux, setBateaux] = useState([])
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState(null)
@@ -18,19 +16,18 @@ export default function ListeBateaux() {
 
   return (
     <main>
-      <header>
+      <header className="mb-8">
         <h1>Mes bateaux</h1>
-        <button onClick={deconnexion}>Se déconnecter</button>
       </header>
 
-      {chargement && <p>Chargement…</p>}
-      {erreur && <p role="alert">{erreur}</p>}
+      {chargement && <p className="text-ocean-600">Chargement…</p>}
+      {erreur && <p role="alert" className="font-medium text-coral-600">{erreur}</p>}
 
       {!chargement && !erreur && bateaux.length === 0 && (
-        <p>Vous n'avez pas encore de bateau.</p>
+        <p className="text-ocean-600">Vous n'avez pas encore de bateau.</p>
       )}
 
-      <section>
+      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {bateaux.map((bateau) => (
           <CarteBateau key={bateau.id} bateau={bateau} />
         ))}

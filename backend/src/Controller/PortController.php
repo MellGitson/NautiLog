@@ -20,13 +20,14 @@ class PortController extends AbstractController
         private EntityManagerInterface $em,
         private ValidatorInterface $validator,
         private SerializerInterface $serializer,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'liste', methods: ['GET'])]
     public function liste(): JsonResponse
     {
         $ports = $this->em->getRepository(Port::class)->findAll();
-        $donnees = array_map(fn(Port $port) => $this->serialiser($port), $ports);
+        $donnees = array_map(fn (Port $port) => $this->serialiser($port), $ports);
 
         return $this->json($donnees, Response::HTTP_OK);
     }
@@ -117,13 +118,13 @@ class PortController extends AbstractController
     private function serialiser(Port $port): array
     {
         return [
-            'id'        => $port->getId(),
-            'nom'       => $port->getName(),
-            'ville'     => $port->getCity(),
-            'latitude'  => (float) $port->getLatitude(),
+            'id' => $port->getId(),
+            'nom' => $port->getName(),
+            'ville' => $port->getCity(),
+            'latitude' => (float) $port->getLatitude(),
             'longitude' => (float) $port->getLongitude(),
-            'capacite'  => $port->getCapacity(),
-            'bateaux'   => $port->getBoats()->count(),
+            'capacite' => $port->getCapacity(),
+            'bateaux' => $port->getBoats()->count(),
         ];
     }
 
@@ -133,6 +134,7 @@ class PortController extends AbstractController
         foreach ($erreurs as $erreur) {
             $messages[$erreur->getPropertyPath()] = $erreur->getMessage();
         }
+
         return ['erreurs' => $messages];
     }
 }

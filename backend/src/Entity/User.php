@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Attribute\Encrypted;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -33,6 +34,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Encrypted]
     private ?string $licenseNumber = null;
 
     #[ORM\Column]
@@ -48,30 +50,78 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->boats = new ArrayCollection();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getEmail(): ?string { return $this->email; }
-    public function setEmail(string $email): static { $this->email = $email; return $this; }
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
 
-    public function getUserIdentifier(): string { return (string) $this->email; }
+    public function setEmail(string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
 
     public function getRoles(): array
     {
         $roles = $this->roles;
         $roles[] = 'ROLE_USER';
+
         return array_unique($roles);
     }
-    public function setRoles(array $roles): static { $this->roles = $roles; return $this; }
 
-    public function getPassword(): ?string { return $this->password; }
-    public function setPassword(string $password): static { $this->password = $password; return $this; }
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
 
-    public function getLicenseNumber(): ?string { return $this->licenseNumber; }
-    public function setLicenseNumber(?string $licenseNumber): static { $this->licenseNumber = $licenseNumber; return $this; }
+        return $this;
+    }
 
-    public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
 
-    public function getBoats(): Collection { return $this->boats; }
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
 
-    public function eraseCredentials(): void {}
+        return $this;
+    }
+
+    public function getLicenseNumber(): ?string
+    {
+        return $this->licenseNumber;
+    }
+
+    public function setLicenseNumber(?string $licenseNumber): static
+    {
+        $this->licenseNumber = $licenseNumber;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getBoats(): Collection
+    {
+        return $this->boats;
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
 }

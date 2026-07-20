@@ -11,8 +11,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/auth', name: 'api_auth_')]
 class AuthController extends AbstractController
@@ -22,7 +22,8 @@ class AuthController extends AbstractController
         private UserPasswordHasherInterface $hasher,
         private ValidatorInterface $validator,
         private SerializerInterface $serializer,
-    ) {}
+    ) {
+    }
 
     #[Route('/register', name: 'register', methods: ['POST'])]
     public function register(Request $request): JsonResponse
@@ -35,6 +36,7 @@ class AuthController extends AbstractController
             foreach ($errors as $error) {
                 $messages[$error->getPropertyPath()] = $error->getMessage();
             }
+
             return $this->json(['errors' => $messages], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -55,10 +57,16 @@ class AuthController extends AbstractController
         return $this->json([
             'message' => 'Compte créé avec succès.',
             'user' => [
-                'id'    => $user->getId(),
+                'id' => $user->getId(),
                 'email' => $user->getEmail(),
                 'roles' => $user->getRoles(),
             ],
         ], Response::HTTP_CREATED);
+    }
+
+    #[Route('/login', name: 'login', methods: ['POST'])]
+    public function login(): void
+    {
+        throw new \LogicException('Cette route est interceptée par le firewall "login" (json_login) avant d\'atteindre ce contrôleur.');
     }
 }
