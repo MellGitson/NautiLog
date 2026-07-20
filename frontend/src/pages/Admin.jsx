@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
+import GestionUtilisateurs from '../components/GestionUtilisateurs'
 
 function CarteKpi({ label, valeur, sousDetail }) {
   return (
@@ -17,7 +18,7 @@ export default function Admin() {
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState(null)
 
-  useEffect(() => {
+  const charger = () => {
     Promise.all([
       api.get('/admin/stats'),
       api.get('/admin/users'),
@@ -28,7 +29,9 @@ export default function Admin() {
       })
       .catch(() => setErreur('Impossible de charger les données du dashboard.'))
       .finally(() => setChargement(false))
-  }, [])
+  }
+
+  useEffect(charger, [])
 
   if (chargement) return <main><p>Chargement du dashboard…</p></main>
   if (erreur) return <main><p className="text-coral-600">{erreur}</p></main>
@@ -78,14 +81,7 @@ export default function Admin() {
 
       <section className="mt-8">
         <h2 className="mb-3 text-lg font-semibold text-ocean-800">Utilisateurs</h2>
-        <ul className="flex flex-col gap-2">
-          {utilisateurs.map((u) => (
-            <li key={u.id} className="rounded-lg border border-ocean-100 bg-white px-4 py-3">
-              <span className="font-medium">{u.email}</span>
-              <span className="ml-2 text-sm text-ocean-500">{u.roles.join(', ')}</span>
-            </li>
-          ))}
-        </ul>
+        <GestionUtilisateurs utilisateurs={utilisateurs} onMiseAJour={charger} />
       </section>
     </main>
   )
