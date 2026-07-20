@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { photoBateau } from '../assets/photosBateaux'
+import { useAuth } from '../context/AuthContext'
 import Lightbox from './Lightbox'
 
 const BADGES = {
@@ -10,8 +11,10 @@ const BADGES = {
 }
 
 export default function CarteBateau({ bateau }) {
+  const { user } = useAuth()
   const [zoom, setZoom] = useState(false)
-  const photo = photoBateau(bateau)
+  const photo = bateau.photoUrl ? bateau.photoUrl : photoBateau(bateau)
+  const estMonBateau = bateau.proprietaire?.email === user?.email
 
   return (
     <article className="card !p-0 flex flex-col overflow-hidden">
@@ -25,6 +28,11 @@ export default function CarteBateau({ bateau }) {
         <span className="absolute right-2 top-2 badge bg-white/85 text-ocean-700 backdrop-blur-sm">
           {bateau.type}
         </span>
+        {estMonBateau && (
+          <span className="absolute left-2 top-2 badge bg-coral-500 text-white">
+            Mon bateau
+          </span>
+        )}
       </button>
 
       <div className="flex flex-1 flex-col gap-3 p-6">
