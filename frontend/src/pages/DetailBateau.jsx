@@ -5,6 +5,7 @@ import { photoBateau } from '../assets/photosBateaux'
 import { useAuth } from '../context/AuthContext'
 import Lightbox from '../components/Lightbox'
 import GestionBateau from '../components/GestionBateau'
+import FormulaireReservation from '../components/FormulaireReservation'
 
 export default function DetailBateau() {
   const { id } = useParams()
@@ -114,6 +115,8 @@ export default function DetailBateau() {
       )}
 
       {peutGerer && <GestionBateau bateau={bateau} onMiseAJour={recharger} />}
+
+      {!peutGerer && <FormulaireReservation bateau={bateau} />}
     </main>
   )
 }
