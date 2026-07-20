@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Dto\BateauDto;
 use App\Entity\Boat;
 use App\Entity\Port;
+use App\Security\Voter\BoatVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -86,7 +87,7 @@ class BateauController extends AbstractController
             return $this->json(['erreur' => 'Bateau introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        if ($bateau->getOwner() !== $this->getUser()) {
+        if (!$this->isGranted(BoatVoter::EDIT, $bateau)) {
             return $this->json(['erreur' => 'Accès refusé : vous n\'êtes pas le propriétaire de ce bateau.'], Response::HTTP_FORBIDDEN);
         }
 
@@ -123,7 +124,7 @@ class BateauController extends AbstractController
             return $this->json(['erreur' => 'Bateau introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        if ($bateau->getOwner() !== $this->getUser()) {
+        if (!$this->isGranted(BoatVoter::DELETE, $bateau)) {
             return $this->json(['erreur' => 'Accès refusé : vous n\'êtes pas le propriétaire de ce bateau.'], Response::HTTP_FORBIDDEN);
         }
 
