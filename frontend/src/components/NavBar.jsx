@@ -3,8 +3,9 @@ import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function NavBar() {
-  const { estConnecte, deconnexion } = useAuth()
+  const { estConnecte, aRole, user, deconnexion } = useAuth()
   const [menuOuvert, setMenuOuvert] = useState(false)
+  const estAdmin = aRole('ROLE_ADMIN')
 
   const lien = ({ isActive }) =>
     `text-sm font-medium transition-colors ${
@@ -12,6 +13,8 @@ export default function NavBar() {
     }`
 
   const fermerMenu = () => setMenuOuvert(false)
+
+  const initiale = user?.email?.charAt(0).toUpperCase() ?? '?'
 
   return (
     <header className="sticky top-0 z-10 border-b border-ocean-100 bg-white/80 backdrop-blur-md">
@@ -33,6 +36,15 @@ export default function NavBar() {
               <NavLink to="/bateaux" className={lien}>Bateaux</NavLink>
               <NavLink to="/ports" className={lien}>Ports</NavLink>
               <NavLink to="/trajets" className={lien}>Trajets</NavLink>
+              {estAdmin && <NavLink to="/admin" className={lien}>Admin</NavLink>}
+              <div
+                title={estAdmin ? `${user?.email} (administrateur)` : user?.email}
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white ${
+                  estAdmin ? 'bg-coral-500' : 'bg-ocean-500'
+                }`}
+              >
+                {initiale}
+              </div>
               <button onClick={deconnexion} className="btn-ghost !px-4 !py-1.5 text-sm">
                 Se déconnecter
               </button>
@@ -65,6 +77,13 @@ export default function NavBar() {
               <NavLink to="/bateaux" className={lien} onClick={fermerMenu}>Bateaux</NavLink>
               <NavLink to="/ports" className={`${lien} py-2`} onClick={fermerMenu}>Ports</NavLink>
               <NavLink to="/trajets" className={`${lien} py-2`} onClick={fermerMenu}>Trajets</NavLink>
+              {estAdmin && (
+                <NavLink to="/admin" className={`${lien} py-2`} onClick={fermerMenu}>Admin</NavLink>
+              )}
+              <p className="py-2 text-sm text-ocean-500">
+                Connecté en tant que <span className="font-medium text-ocean-800">{user?.email}</span>
+                {estAdmin && ' (administrateur)'}
+              </p>
               <button
                 onClick={() => { deconnexion(); fermerMenu() }}
                 className="btn-ghost mt-2 !px-4 !py-1.5 text-sm"
