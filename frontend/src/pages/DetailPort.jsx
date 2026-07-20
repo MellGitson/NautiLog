@@ -1,18 +1,30 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import api from '../services/api'
+import { useAuth } from '../context/AuthContext'
+import CarteEmplacements from '../components/CarteEmplacements'
+import GestionEmplacements from '../components/GestionEmplacements'
 
 export default function DetailPort() {
   const { id } = useParams()
+  const { aRole } = useAuth()
   const [port, setPort] = useState(null)
+  const [emplacements, setEmplacements] = useState([])
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState(null)
+
+  const chargerEmplacements = () => {
+    api.get(`/ports/${id}/emplacements`)
+      .then((res) => setEmplacements(res.data))
+      .catch(() => {})
+  }
 
   useEffect(() => {
     api.get(`/ports/${id}`)
       .then((res) => setPort(res.data))
       .catch(() => setErreur('Impossible de charger ce port.'))
       .finally(() => setChargement(false))
+    chargerEmplacements()
   }, [id])
 
   if (chargement) return <p className="text-ocean-600">Chargement…</p>
@@ -47,6 +59,17 @@ export default function DetailPort() {
           </div>
         </dl>
       </div>
+
+      {emplacements.length > 0 && (
+        <div className="mt-6">
+          <h2 className="mb-3">Emplacements</h2>
+          <CarteEmplacements port={port} emplacements={emplacements} />
+        </div>
+      )}
+
+      {aRole('ROLE_ADMIN') && (
+        <GestionEmplacements port={port} emplacements={emplacements} onMiseAJour={chargerEmplacements} />
+      )}
     </main>
   )
 }
