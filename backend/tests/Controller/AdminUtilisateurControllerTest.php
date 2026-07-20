@@ -125,4 +125,96 @@ class AdminUtilisateurControllerTest extends WebTestCase
 
         $this->assertResponseStatusCodeSame(422);
     }
+
+    // PATCH /api/admin/users/{id} — non admin → 403
+    public function testModifierProfilNonAdmin(): void
+    {
+        $client = static::createClient();
+        $token = $this->creerUtilisateurEtToken($client, 'profil_non_admin@nautilog.fr', 'ROLE_RENTER');
+
+        $client->request('PATCH', '/api/admin/users/1', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ], json_encode(['email' => 'x@nautilog.fr']));
+
+        $this->assertResponseStatusCodeSame(403);
+    }
+
+    // PATCH /api/admin/users/{id} — admin modifie email/prénom/nom/téléphone
+    public function testModifierProfilUtilisateur(): void
+    {
+        $client = static::createClient();
+        $adminToken = $this->creerAdminEtToken($client);
+
+        $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => 'cible_profil@nautilog.fr',
+            'password' => 'Password1234!',
+            'role' => 'ROLE_RENTER',
+        ]));
+        $cibleId = json_decode($client->getResponse()->getContent(), true)['user']['id'];
+
+        $client->request('PATCH', "/api/admin/users/$cibleId", [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $adminToken",
+        ], json_encode([
+            'email' => 'cible_profil_modifie@nautilog.fr',
+            'firstName' => 'Jean',
+            'lastName' => 'Dupont',
+            'phone' => '0601020304',
+        ]));
+
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('cible_profil_modifie@nautilog.fr', $data['email']);
+        $this->assertSame('Jean', $data['firstName']);
+        $this->assertSame('Dupont', $data['lastName']);
+    }
+
+    // PATCH /api/admin/users/{id} — email déjà utilisé → 409
+    public function testModifierProfilEmailDejaPris(): void
+    {
+        $client = static::createClient();
+        $adminToken = $this->creerAdminEtToken($client);
+
+        $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => 'profil_existant@nautilog.fr',
+            'password' => 'Password1234!',
+            'role' => 'ROLE_RENTER',
+        ]));
+
+        $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => 'profil_cible_conflit@nautilog.fr',
+            'password' => 'Password1234!',
+            'role' => 'ROLE_RENTER',
+        ]));
+        $cibleId = json_decode($client->getResponse()->getContent(), true)['user']['id'];
+
+        $client->request('PATCH', "/api/admin/users/$cibleId", [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $adminToken",
+        ], json_encode(['email' => 'profil_existant@nautilog.fr']));
+
+        $this->assertResponseStatusCodeSame(409);
+    }
+
+    // PATCH /api/admin/users/{id} — email invalide → 422
+    public function testModifierProfilEmailInvalide(): void
+    {
+        $client = static::createClient();
+        $adminToken = $this->creerAdminEtToken($client);
+
+        $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => 'profil_email_invalide@nautilog.fr',
+            'password' => 'Password1234!',
+            'role' => 'ROLE_RENTER',
+        ]));
+        $cibleId = json_decode($client->getResponse()->getContent(), true)['user']['id'];
+
+        $client->request('PATCH', "/api/admin/users/$cibleId", [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $adminToken",
+        ], json_encode(['email' => 'pas-un-email']));
+
+        $this->assertResponseStatusCodeSame(422);
+    }
 }
