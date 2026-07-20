@@ -37,14 +37,16 @@ export default function NavBar() {
               <NavLink to="/ports" className={lien}>Ports</NavLink>
               <NavLink to="/trajets" className={lien}>Trajets</NavLink>
               {estAdmin && <NavLink to="/admin" className={lien}>Admin</NavLink>}
-              <div
+              <Link
+                to="/profil"
                 title={estAdmin ? `${user?.email} (administrateur)` : user?.email}
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white ${
+                aria-label="Mon profil"
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white transition-opacity hover:opacity-80 ${
                   estAdmin ? 'bg-coral-500' : 'bg-ocean-500'
                 }`}
               >
                 {initiale}
-              </div>
+              </Link>
               <button onClick={deconnexion} className="btn-ghost !px-4 !py-1.5 text-sm">
                 Se déconnecter
               </button>
@@ -80,10 +82,9 @@ export default function NavBar() {
               {estAdmin && (
                 <NavLink to="/admin" className={`${lien} py-2`} onClick={fermerMenu}>Admin</NavLink>
               )}
-              <p className="py-2 text-sm text-ocean-500">
-                Connecté en tant que <span className="font-medium text-ocean-800">{user?.email}</span>
-                {estAdmin && ' (administrateur)'}
-              </p>
+              <NavLink to="/profil" className={`${lien} py-2`} onClick={fermerMenu}>
+                Mon profil <span className="text-ocean-500">({user?.email}{estAdmin && ', administrateur'})</span>
+              </NavLink>
               <button
                 onClick={() => { deconnexion(); fermerMenu() }}
                 className="btn-ghost mt-2 !px-4 !py-1.5 text-sm"
