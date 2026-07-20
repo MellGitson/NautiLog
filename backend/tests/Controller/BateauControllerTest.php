@@ -52,6 +52,31 @@ class BateauControllerTest extends WebTestCase
         $this->assertSame('Mon Voilier', $data['nom']);
     }
 
+    // POST /api/bateaux — avec matricule et description
+    public function testCreerBateauAvecMatriculeEtDescription(): void
+    {
+        $client = static::createClient();
+        $token = $this->creerUtilisateurEtToken($client, 'owner_matricule@nautilog.fr', 'ROLE_OWNER');
+
+        $client->request('POST', '/api/bateaux', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ], json_encode([
+            'nom' => 'Voilier Immatriculé',
+            'type' => 'Voilier',
+            'statut' => 'DISPONIBLE',
+            'matricule' => 'FR-1234-AB',
+            'description' => 'Un très beau voilier.',
+        ]));
+
+        $this->assertResponseStatusCodeSame(201);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('FR-1234-AB', $data['matricule']);
+        $this->assertSame('Un très beau voilier.', $data['description']);
+        $this->assertArrayHasKey('reparations', $data);
+        $this->assertSame([], $data['reparations']);
+    }
+
     // POST /api/bateaux — sans authentification → 401
     public function testCreerBateauSansAuth(): void
     {

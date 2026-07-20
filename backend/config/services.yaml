@@ -22,3 +22,7 @@ services:
     App\Service\EncryptionService:
         arguments:
             $encryptKey: '%env(APP_ENCRYPT_KEY)%'
+
+    App\Service\UploadService:
+        arguments:
+            $uploadDir: '%kernel.project_dir%/public/uploads/bateaux'

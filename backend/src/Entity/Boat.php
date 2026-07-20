@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\BoatRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -48,12 +50,28 @@ class Boat
     #[ORM\JoinColumn(nullable: true)]
     private ?Port $port = null;
 
+    #[ORM\Column(length: 50, nullable: true, unique: true)]
+    #[Assert\Length(max: 50)]
+    private ?string $matricule = null;
+
+    #[ORM\Column(length: 2000, nullable: true)]
+    #[Assert\Length(max: 2000)]
+    private ?string $description = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $photoUrl = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\OneToMany(targetEntity: Repair::class, mappedBy: 'boat', orphanRemoval: true)]
+    #[ORM\OrderBy(['date' => 'DESC'])]
+    private Collection $repairs;
 
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->repairs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -124,5 +142,46 @@ class Boat
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getMatricule(): ?string
+    {
+        return $this->matricule;
+    }
+
+    public function setMatricule(?string $matricule): static
+    {
+        $this->matricule = $matricule;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getPhotoUrl(): ?string
+    {
+        return $this->photoUrl;
+    }
+
+    public function setPhotoUrl(?string $photoUrl): static
+    {
+        $this->photoUrl = $photoUrl;
+
+        return $this;
+    }
+
+    public function getRepairs(): Collection
+    {
+        return $this->repairs;
     }
 }
