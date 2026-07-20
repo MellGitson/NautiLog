@@ -36,6 +36,7 @@ export default function NavBar() {
               <NavLink to="/bateaux" className={lien}>Bateaux</NavLink>
               <NavLink to="/ports" className={lien}>Ports</NavLink>
               <NavLink to="/trajets" className={lien}>Trajets</NavLink>
+              <NavLink to="/reservations" className={lien}>Réservations</NavLink>
               {estAdmin && <NavLink to="/admin" className={lien}>Admin</NavLink>}
               <Link
                 to="/profil"
@@ -79,6 +80,7 @@ export default function NavBar() {
               <NavLink to="/bateaux" className={lien} onClick={fermerMenu}>Bateaux</NavLink>
               <NavLink to="/ports" className={`${lien} py-2`} onClick={fermerMenu}>Ports</NavLink>
               <NavLink to="/trajets" className={`${lien} py-2`} onClick={fermerMenu}>Trajets</NavLink>
+              <NavLink to="/reservations" className={`${lien} py-2`} onClick={fermerMenu}>Réservations</NavLink>
               {estAdmin && (
                 <NavLink to="/admin" className={`${lien} py-2`} onClick={fermerMenu}>Admin</NavLink>
               )}
