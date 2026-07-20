@@ -29,4 +29,16 @@ class BateauDto
 
     #[Assert\Type(type: 'integer', message: "L'identifiant du port doit être un entier.")]
     public ?int $portId = null;
+
+    #[Assert\Length(
+        max: 50,
+        maxMessage: 'Le matricule ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    public ?string $matricule = null;
+
+    #[Assert\Length(
+        max: 2000,
+        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    public ?string $description = null;
 }

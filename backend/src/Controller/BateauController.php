@@ -6,6 +6,7 @@ use App\Dto\BateauDto;
 use App\Entity\Boat;
 use App\Entity\Port;
 use App\Security\Voter\BoatVoter;
+use App\Service\UploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,6 +23,7 @@ class BateauController extends AbstractController
         private EntityManagerInterface $em,
         private ValidatorInterface $validator,
         private SerializerInterface $serializer,
+        private UploadService $uploadService,
     ) {
     }
 
@@ -62,6 +64,8 @@ class BateauController extends AbstractController
         $bateau->setName($dto->nom);
         $bateau->setType($dto->type);
         $bateau->setStatus($dto->statut);
+        $bateau->setMatricule($dto->matricule);
+        $bateau->setDescription($dto->description);
         $bateau->setOwner($this->getUser());
 
         if ($dto->portId) {
@@ -101,6 +105,8 @@ class BateauController extends AbstractController
         $bateau->setName($dto->nom);
         $bateau->setType($dto->type);
         $bateau->setStatus($dto->statut);
+        $bateau->setMatricule($dto->matricule);
+        $bateau->setDescription($dto->description);
 
         if ($dto->portId) {
             $port = $this->em->getRepository(Port::class)->find($dto->portId);
@@ -134,6 +140,36 @@ class BateauController extends AbstractController
         return $this->json(['message' => 'Bateau supprimé avec succès.'], Response::HTTP_OK);
     }
 
+    #[Route('/{id}/photo', name: 'photo', methods: ['POST'])]
+    public function uploaderPhoto(int $id, Request $request): JsonResponse
+    {
+        $bateau = $this->em->getRepository(Boat::class)->find($id);
+
+        if (!$bateau) {
+            return $this->json(['erreur' => 'Bateau introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$this->isGranted(BoatVoter::EDIT, $bateau)) {
+            return $this->json(['erreur' => 'Accès refusé : vous n\'êtes pas le propriétaire de ce bateau.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $fichier = $request->files->get('photo');
+        if (!$fichier) {
+            return $this->json(['erreur' => 'Aucun fichier reçu.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $photoUrl = $this->uploadService->uploaderPhotoBateau($fichier);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['erreur' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $bateau->setPhotoUrl($photoUrl);
+        $this->em->flush();
+
+        return $this->json($this->serialiser($bateau), Response::HTTP_OK);
+    }
+
     private function serialiser(Boat $bateau): array
     {
         return [
@@ -141,6 +177,9 @@ class BateauController extends AbstractController
             'nom' => $bateau->getName(),
             'type' => $bateau->getType(),
             'statut' => $bateau->getStatus(),
+            'matricule' => $bateau->getMatricule(),
+            'description' => $bateau->getDescription(),
+            'photoUrl' => $bateau->getPhotoUrl(),
             'creeLe' => $bateau->getCreatedAt()?->format('Y-m-d H:i:s'),
             'proprietaire' => [
                 'id' => $bateau->getOwner()?->getId(),
@@ -151,6 +190,11 @@ class BateauController extends AbstractController
                 'nom' => $bateau->getPort()->getName(),
                 'ville' => $bateau->getPort()->getCity(),
             ] : null,
+            'reparations' => array_map(fn ($r) => [
+                'id' => $r->getId(),
+                'description' => $r->getDescription(),
+                'date' => $r->getDate()?->format('Y-m-d'),
+            ], $bateau->getRepairs()->toArray()),
         ];
     }
 
