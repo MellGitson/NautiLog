@@ -12,6 +12,7 @@ import ListeTrajets from './pages/ListeTrajets'
 import DetailTrajet from './pages/DetailTrajet'
 import NouveauTrajet from './pages/NouveauTrajet'
 import Admin from './pages/Admin'
+import Profil from './pages/Profil'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/trajets/nouveau"  element={<RouteProtegee><NouveauTrajet /></RouteProtegee>} />
           <Route path="/trajets/:id"      element={<RouteProtegee><DetailTrajet /></RouteProtegee>} />
           <Route path="/admin"            element={<RouteProtegee role="ROLE_ADMIN"><Admin /></RouteProtegee>} />
+          <Route path="/profil"           element={<RouteProtegee><Profil /></RouteProtegee>} />
           <Route path="*"                 element={<NotFound />} />
         </Routes>
       </div>
