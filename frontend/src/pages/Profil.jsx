@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
 export default function Profil() {
+  const { deconnexion } = useAuth()
+  const navigate = useNavigate()
   const [valeurs, setValeurs] = useState({ firstName: '', lastName: '', phone: '', avatarUrl: '' })
   const [chargement, setChargement] = useState(true)
   const [enregistrement, setEnregistrement] = useState(false)
   const [erreurs, setErreurs] = useState({})
   const [succes, setSucces] = useState(false)
+  const [confirmationSuppression, setConfirmationSuppression] = useState(false)
+  const [suppressionEnCours, setSuppressionEnCours] = useState(false)
 
   useEffect(() => {
     api.get('/me')
@@ -38,6 +44,17 @@ export default function Profil() {
       setErreurs(err.response?.data?.errors ?? {})
     } finally {
       setEnregistrement(false)
+    }
+  }
+
+  const supprimerCompte = async () => {
+    setSuppressionEnCours(true)
+    try {
+      await api.delete('/me')
+      deconnexion()
+      navigate('/')
+    } finally {
+      setSuppressionEnCours(false)
     }
   }
 
@@ -108,6 +125,47 @@ export default function Profil() {
             {enregistrement ? 'Enregistrement…' : 'Enregistrer'}
           </button>
         </form>
+      </div>
+
+      <div className="card mt-6 border-coral-200">
+        <h2 className="text-coral-700">Supprimer mon compte</h2>
+        <p className="mt-1 text-sm text-ocean-600">
+          Suppression définitive de votre compte et de toutes vos données (bateaux, réservations, historique).
+          Cette action est irréversible.
+        </p>
+
+        {!confirmationSuppression ? (
+          <button
+            type="button"
+            onClick={() => setConfirmationSuppression(true)}
+            className="btn-ghost mt-4 !border-coral-300 !text-coral-600 hover:!bg-coral-50"
+          >
+            Supprimer mon compte
+          </button>
+        ) : (
+          <div className="mt-4 space-y-3">
+            <p role="alert" className="text-sm font-medium text-coral-600">
+              Êtes-vous sûr ? Cette action supprimera définitivement votre compte, vos bateaux et vos réservations.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={supprimerCompte}
+                disabled={suppressionEnCours}
+                className="btn-primary !bg-coral-600 hover:!bg-coral-700"
+              >
+                {suppressionEnCours ? 'Suppression…' : 'Oui, supprimer définitivement'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmationSuppression(false)}
+                className="btn-ghost"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   )

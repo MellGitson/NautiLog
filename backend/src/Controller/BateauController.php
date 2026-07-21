@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Dto\BateauDto;
 use App\Entity\Boat;
+use App\Entity\LogEntry;
 use App\Entity\Port;
 use App\Security\Voter\BoatVoter;
+use App\Service\CarnetPdfService;
 use App\Service\UploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,6 +26,7 @@ class BateauController extends AbstractController
         private ValidatorInterface $validator,
         private SerializerInterface $serializer,
         private UploadService $uploadService,
+        private CarnetPdfService $carnetPdfService,
     ) {
     }
 
@@ -168,6 +171,36 @@ class BateauController extends AbstractController
         $this->em->flush();
 
         return $this->json($this->serialiser($bateau), Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/export-pdf', name: 'export_pdf', methods: ['GET'])]
+    public function exporterPdf(int $id): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $bateau = $this->em->getRepository(Boat::class)->find($id);
+
+        if (!$bateau) {
+            return $this->json(['erreur' => 'Bateau introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$this->isGranted(BoatVoter::EDIT, $bateau)) {
+            return $this->json(['erreur' => 'Accès refusé : vous n\'êtes pas le propriétaire de ce bateau.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $trajets = $this->em->getRepository(LogEntry::class)->findBy(
+            ['boat' => $bateau],
+            ['departureDate' => 'DESC']
+        );
+
+        $pdf = $this->carnetPdfService->genererCarnetNavigation($bateau, $trajets);
+
+        $nomFichier = 'carnet-navigation-'.($bateau->getMatricule() ?: $bateau->getId()).'.pdf';
+
+        return new Response($pdf, Response::HTTP_OK, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $nomFichier),
+        ]);
     }
 
     private function serialiser(Boat $bateau): array

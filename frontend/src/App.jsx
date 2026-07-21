@@ -19,6 +19,7 @@ import AdminUtilisateurs from './pages/AdminUtilisateurs'
 import AdminReservations from './pages/AdminReservations'
 import Profil from './pages/Profil'
 import MesReservations from './pages/MesReservations'
+import Notifications from './pages/Notifications'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -57,6 +58,7 @@ export default function App() {
                 <Route path="/trajets/nouveau"  element={<RouteProtegee><NouveauTrajet /></RouteProtegee>} />
                 <Route path="/trajets/:id"      element={<RouteProtegee><DetailTrajet /></RouteProtegee>} />
                 <Route path="/reservations"     element={<RouteProtegee><MesReservations /></RouteProtegee>} />
+                <Route path="/notifications"    element={<RouteProtegee><Notifications /></RouteProtegee>} />
                 <Route path="/profil"           element={<RouteProtegee><Profil /></RouteProtegee>} />
                 <Route path="*"                 element={<NotFound />} />
               </Routes>

@@ -1,11 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import api from '../services/api'
 
 export default function NavBar() {
   const { estConnecte, aRole, user, deconnexion } = useAuth()
   const [menuOuvert, setMenuOuvert] = useState(false)
+  const [nombreNonLues, setNombreNonLues] = useState(0)
   const estAdmin = aRole('ROLE_ADMIN')
+
+  useEffect(() => {
+    if (!estConnecte) return
+    api.get('/notifications')
+      .then((res) => setNombreNonLues(res.data.filter((n) => !n.lu).length))
+      .catch(() => {})
+  }, [estConnecte])
 
   const lien = ({ isActive }) =>
     `text-sm font-medium transition-colors ${
@@ -37,6 +46,14 @@ export default function NavBar() {
               <NavLink to="/ports" className={lien}>Ports</NavLink>
               <NavLink to="/trajets" className={lien}>Trajets</NavLink>
               <NavLink to="/reservations" className={lien}>Réservations</NavLink>
+              <NavLink to="/notifications" className={`${lien} relative`}>
+                Notifications
+                {nombreNonLues > 0 && (
+                  <span className="absolute -right-3 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-coral-500 text-[10px] font-semibold text-white">
+                    {nombreNonLues}
+                  </span>
+                )}
+              </NavLink>
               {estAdmin && <NavLink to="/admin" className={lien}>Admin</NavLink>}
               <Link
                 to="/profil"
@@ -81,6 +98,9 @@ export default function NavBar() {
               <NavLink to="/ports" className={`${lien} py-2`} onClick={fermerMenu}>Ports</NavLink>
               <NavLink to="/trajets" className={`${lien} py-2`} onClick={fermerMenu}>Trajets</NavLink>
               <NavLink to="/reservations" className={`${lien} py-2`} onClick={fermerMenu}>Réservations</NavLink>
+              <NavLink to="/notifications" className={`${lien} py-2`} onClick={fermerMenu}>
+                Notifications {nombreNonLues > 0 && <span className="text-coral-500">({nombreNonLues})</span>}
+              </NavLink>
               {estAdmin && (
                 <NavLink to="/admin" className={`${lien} py-2`} onClick={fermerMenu}>Admin</NavLink>
               )}
