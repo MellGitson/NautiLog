@@ -11,11 +11,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Signalement
 {
     public const STATUS_OUVERT = 'OUVERT';
-    public const STATUS_REPONDU = 'REPONDU';
+    public const STATUS_TRAITE = 'TRAITE';
 
     public const STATUSES = [
         self::STATUS_OUVERT,
-        self::STATUS_REPONDU,
+        self::STATUS_TRAITE,
     ];
 
     #[ORM\Id]

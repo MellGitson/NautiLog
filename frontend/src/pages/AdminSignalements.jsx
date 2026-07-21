@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { listerSignalements, repondreSignalement } from '../services/signalements'
 
-const LABELS_STATUT = { OUVERT: 'Ouvert', REPONDU: 'Répondu' }
-const BADGES_STATUT = { OUVERT: 'badge bg-amber-100 text-amber-700', REPONDU: 'badge-disponible' }
+const LABELS_STATUT = { OUVERT: 'Ouvert', TRAITE: 'Traité' }
+const BADGES_STATUT = { OUVERT: 'badge bg-amber-100 text-amber-700', TRAITE: 'badge-disponible' }
 
 export default function AdminSignalements() {
   const [signalements, setSignalements] = useState([])
@@ -57,7 +57,7 @@ export default function AdminSignalements() {
             </div>
             <p className="mt-2 text-ocean-700">{s.message}</p>
 
-            {s.statut === 'REPONDU' ? (
+            {s.statut === 'TRAITE' ? (
               <div className="mt-3 border-t border-ocean-100 pt-3">
                 <p className="text-sm font-medium text-ocean-500">Votre réponse :</p>
                 <p className="mt-1 text-ocean-800">{s.reponseAdmin}</p>

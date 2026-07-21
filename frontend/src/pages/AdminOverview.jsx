@@ -41,7 +41,7 @@ export default function AdminOverview() {
         <p className="mt-2 text-ocean-600">Vue d'ensemble de la flotte, répartie sur les ports.</p>
       </header>
 
-      <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <section className="grid grid-cols-2 gap-4 sm:grid-cols-5">
         <CarteKpi
           label="Bateaux"
           valeur={stats.bateaux.total}
@@ -54,6 +54,11 @@ export default function AdminOverview() {
           sousDetail={`${stats.utilisateurs.parRole.ROLE_ADMIN ?? 0} admin(s)`}
         />
         <CarteKpi label="Trajets" valeur={stats.trajets.total} />
+        <CarteKpi
+          label="Signalements en cours"
+          valeur={stats.signalements.ouverts}
+          sousDetail={stats.signalements.ouverts > 0 ? 'à traiter' : 'aucun en attente'}
+        />
       </section>
 
       <section className="mt-8">

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Boat;
 use App\Entity\LogEntry;
 use App\Entity\Port;
+use App\Entity\Signalement;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -54,6 +55,9 @@ class AdminStatsController extends AbstractController
             ],
             'trajets' => [
                 'total' => $this->em->getRepository(LogEntry::class)->count([]),
+            ],
+            'signalements' => [
+                'ouverts' => $this->em->getRepository(Signalement::class)->count(['status' => Signalement::STATUS_OUVERT]),
             ],
         ]);
     }
