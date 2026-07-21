@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { photoBateau } from '../assets/photosBateaux'
 import { useAuth } from '../context/AuthContext'
+import { BADGE_TYPE_BATEAU } from '../utils/typesBateau'
 import Lightbox from './Lightbox'
 
 const BADGES = {
@@ -25,7 +26,7 @@ export default function CarteBateau({ bateau }) {
         className="photo-frame focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean-400 focus-visible:ring-inset"
       >
         <img src={photo} alt={`${bateau.nom} (${bateau.type})`} loading="lazy" />
-        <span className="absolute right-2 top-2 badge bg-white/85 text-ocean-700 backdrop-blur-sm">
+        <span className={`absolute right-2 top-2 ${BADGE_TYPE_BATEAU[bateau.type] ?? 'badge bg-white/85 text-ocean-700'} backdrop-blur-sm`}>
           {bateau.type}
         </span>
         {estMonBateau && (

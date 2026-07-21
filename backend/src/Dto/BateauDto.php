@@ -15,9 +15,9 @@ class BateauDto
     public string $nom = '';
 
     #[Assert\NotBlank(message: 'Le type de bateau est obligatoire.')]
-    #[Assert\Length(
-        max: 100,
-        maxMessage: 'Le type ne peut pas dépasser {{ limit }} caractères.'
+    #[Assert\Choice(
+        choices: Boat::TYPES,
+        message: 'Le type doit être l\'un des suivants : Vedette, Voilier, Zodiac, Bateau de pêche.'
     )]
     public string $type = '';
 

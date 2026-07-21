@@ -1,21 +1,21 @@
 App\Entity\Boat:
     boat_{1..5}:
         name: '<randomElement(["Le Voyageur", "Neptune", "L''Étoile du Sud", "Mistral", "La Belle Vague", "Horizon", "Poséidon", "Zéphyr", "La Méditerranée", "Cap Azur"])> <current()>'
-        type: '<randomElement(["Voilier", "Catamaran", "Yacht", "Bateau à moteur", "Vedette"])>'
+        type: '<randomElement(["Voilier", "Zodiac", "Bateau de pêche", "Vedette"])>'
         status: 'DISPONIBLE'
         owner: '@user_owner_<randomElement([1, 2, 3, 4, 5])>'
         port: '@port_<randomElement([marseille, nice, toulon, cannes, sete])>'
 
     boat_{6..10}:
         name: '<randomElement(["Le Corsaire", "Tempête", "Blue Dream", "La Sirène", "Aventure", "Liberté", "Ocean Star", "Tramontane", "Cap Nord", "La Goélette"])> <current()>'
-        type: '<randomElement(["Voilier", "Catamaran", "Yacht", "Bateau à moteur", "Vedette"])>'
+        type: '<randomElement(["Voilier", "Zodiac", "Bateau de pêche", "Vedette"])>'
         status: 'LOUÉ'
         owner: '@user_owner_<randomElement([1, 2, 3, 4, 5])>'
         port: '@port_<randomElement([brest, bordeaux, lorient])>'
 
     boat_{11..15}:
         name: '<randomElement(["Vieux Loup", "Alizé", "La Caravelle", "Marin d''Eau Douce", "Typhon", "Swell", "Pacific", "Aquila", "Mercure", "Atlas"])> <current()>'
-        type: '<randomElement(["Voilier", "Catamaran", "Yacht", "Bateau à moteur", "Vedette"])>'
+        type: '<randomElement(["Voilier", "Zodiac", "Bateau de pêche", "Vedette"])>'
         status: 'EN_RÉPARATION'
         owner: '@user_owner_<randomElement([1, 2, 3, 4, 5])>'
         port: null

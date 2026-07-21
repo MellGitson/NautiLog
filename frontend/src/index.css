@@ -84,6 +84,22 @@
     @apply badge bg-amber-100 text-amber-700;
   }
 
+  .badge-type-vedette {
+    @apply badge bg-sky-100 text-sky-700;
+  }
+
+  .badge-type-voilier {
+    @apply badge bg-emerald-100 text-emerald-700;
+  }
+
+  .badge-type-zodiac {
+    @apply badge bg-orange-100 text-orange-700;
+  }
+
+  .badge-type-peche {
+    @apply badge bg-violet-100 text-violet-700;
+  }
+
   .photo-frame {
     @apply relative aspect-[4/3] w-full overflow-hidden rounded-t-2xl bg-ocean-100;
   }

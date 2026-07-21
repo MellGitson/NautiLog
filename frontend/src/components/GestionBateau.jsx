@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import api from '../services/api'
+import { TYPES_BATEAU } from '../utils/typesBateau'
 
 const STATUTS = ['DISPONIBLE', 'LOUÉ', 'EN_RÉPARATION']
 
@@ -93,7 +94,9 @@ export default function GestionBateau({ bateau, onMiseAJour }) {
           </div>
           <div>
             <label htmlFor="type" className="label-field">Type</label>
-            <input id="type" name="type" value={valeurs.type} onChange={gererChangement} className="input-field" />
+            <select id="type" name="type" value={valeurs.type} onChange={gererChangement} className="input-field">
+              {TYPES_BATEAU.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
           </div>
           <div>
             <label htmlFor="statut" className="label-field">Statut</label>

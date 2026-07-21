@@ -22,6 +22,18 @@ class Boat
         self::STATUS_REPAIR,
     ];
 
+    public const TYPE_VEDETTE = 'Vedette';
+    public const TYPE_VOILIER = 'Voilier';
+    public const TYPE_ZODIAC = 'Zodiac';
+    public const TYPE_PECHE = 'Bateau de pêche';
+
+    public const TYPES = [
+        self::TYPE_VEDETTE,
+        self::TYPE_VOILIER,
+        self::TYPE_ZODIAC,
+        self::TYPE_PECHE,
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -34,7 +46,7 @@ class Boat
 
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank]
-    #[Assert\Length(max: 100)]
+    #[Assert\Choice(choices: Boat::TYPES)]
     private ?string $type = null;
 
     #[ORM\Column(length: 20)]

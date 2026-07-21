@@ -5,11 +5,10 @@ import fisherman from './yatch-fisherman.avif'
 import fisherman2 from './yatch-fisherman-2.avif'
 
 const PHOTOS_PAR_TYPE = {
-  Vedette: [semiRigide, semiRigide2],
-  'Bateau à moteur': [flybridge],
-  Yacht: [flybridge, fisherman],
+  Vedette: [flybridge, semiRigide2],
   Voilier: [fisherman, fisherman2],
-  Catamaran: [fisherman2, semiRigide2],
+  Zodiac: [semiRigide, semiRigide2],
+  'Bateau de pêche': [fisherman, fisherman2],
 }
 
 const PHOTO_DEFAUT = flybridge
