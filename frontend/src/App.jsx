@@ -17,6 +17,7 @@ import AdminFlotte from './pages/AdminFlotte'
 import AdminPorts from './pages/AdminPorts'
 import AdminUtilisateurs from './pages/AdminUtilisateurs'
 import AdminReservations from './pages/AdminReservations'
+import AdminSignalements from './pages/AdminSignalements'
 import Profil from './pages/Profil'
 import MesReservations from './pages/MesReservations'
 import Notifications from './pages/Notifications'
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="ports" element={<AdminPorts />} />
           <Route path="utilisateurs" element={<AdminUtilisateurs />} />
           <Route path="reservations" element={<AdminReservations />} />
+          <Route path="signalements" element={<AdminSignalements />} />
         </Route>
 
         <Route

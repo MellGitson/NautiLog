@@ -53,6 +53,14 @@ export default function Notifications() {
               )}
             </div>
 
+            {n.reservationId && (
+              <p className="mt-2">
+                <Link to="/reservations" className="text-sm font-medium text-ocean-700 hover:text-coral-500">
+                  Voir mes réservations →
+                </Link>
+              </p>
+            )}
+
             {n.suggestions && n.suggestions.length > 0 && (
               <div className="mt-3 border-t border-ocean-100 pt-3">
                 <p className="text-sm font-medium text-ocean-500">Bateaux disponibles dans le même port :</p>

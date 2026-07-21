@@ -5,9 +5,11 @@ namespace App\Controller;
 use App\Dto\ReservationDto;
 use App\Dto\ReservationStatutDto;
 use App\Entity\Boat;
+use App\Entity\Notification;
 use App\Entity\Reservation;
 use App\Entity\User;
 use App\Security\Voter\BoatVoter;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,6 +26,7 @@ class ReservationController extends AbstractController
         private EntityManagerInterface $em,
         private ValidatorInterface $validator,
         private SerializerInterface $serializer,
+        private NotificationService $notificationService,
     ) {
     }
 
@@ -97,6 +100,29 @@ class ReservationController extends AbstractController
         $reservation->setEndDate($dateFin);
 
         $this->em->persist($reservation);
+
+        $proprietaire = $bateau->getOwner();
+        if ($proprietaire !== $user) {
+            $this->notificationService->notifier(
+                $proprietaire,
+                Notification::TYPE_RESERVATION_CREEE,
+                \sprintf(
+                    '%s a réservé votre bateau "%s" du %s au %s.',
+                    $user->getEmail(),
+                    $bateau->getName(),
+                    $dateDebut->format('d/m/Y'),
+                    $dateFin->format('d/m/Y')
+                ),
+                null,
+                $reservation
+            );
+        }
+
+        $this->notificationService->notifierAdmins(
+            \sprintf('Nouvelle réservation créée sur "%s" par %s.', $bateau->getName(), $user->getEmail()),
+            $reservation
+        );
+
         $this->em->flush();
 
         return $this->json($this->serialiser($reservation), Response::HTTP_CREATED);
@@ -140,6 +166,18 @@ class ReservationController extends AbstractController
         }
 
         $reservation->setStatus($dto->statut);
+
+        $this->notificationService->notifierAdmins(
+            \sprintf(
+                'Réservation #%d ("%s") : statut changé en %s par %s.',
+                $reservation->getId(),
+                $reservation->getBoat()->getName(),
+                $dto->statut,
+                $user->getEmail()
+            ),
+            $reservation
+        );
+
         $this->em->flush();
 
         return $this->json($this->serialiser($reservation), Response::HTTP_OK);
