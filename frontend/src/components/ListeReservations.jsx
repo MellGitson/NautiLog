@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../services/api'
+import { creerSignalement } from '../services/signalements'
+import { useAuth } from '../context/AuthContext'
 
 const LABELS_STATUT = {
   EN_ATTENTE: 'En attente',
@@ -15,8 +17,13 @@ const BADGES_STATUT = {
 }
 
 export default function ListeReservations({ reservations, utilisateur, onMiseAJour }) {
+  const { aRole } = useAuth()
   const [enCours, setEnCours] = useState(null)
   const [erreur, setErreur] = useState(null)
+  const [signalementOuvert, setSignalementOuvert] = useState(null)
+  const [messageSignalement, setMessageSignalement] = useState('')
+  const [envoiSignalement, setEnvoiSignalement] = useState(false)
+  const [confirmationSignalement, setConfirmationSignalement] = useState(null)
 
   const changerStatut = async (reservation, statut) => {
     setErreur(null)
@@ -28,6 +35,26 @@ export default function ListeReservations({ reservations, utilisateur, onMiseAJo
       setErreur(`Impossible de mettre à jour la réservation #${reservation.id}.`)
     } finally {
       setEnCours(null)
+    }
+  }
+
+  const ouvrirSignalement = (id) => {
+    setSignalementOuvert(id)
+    setMessageSignalement('')
+    setConfirmationSignalement(null)
+  }
+
+  const envoyerSignalement = async (reservation) => {
+    setErreur(null)
+    setEnvoiSignalement(true)
+    try {
+      await creerSignalement(reservation.id, messageSignalement)
+      setSignalementOuvert(null)
+      setConfirmationSignalement(reservation.id)
+    } catch {
+      setErreur(`Impossible d'envoyer le signalement pour la réservation #${reservation.id}.`)
+    } finally {
+      setEnvoiSignalement(false)
     }
   }
 
@@ -55,6 +82,7 @@ export default function ListeReservations({ reservations, utilisateur, onMiseAJo
               const estLocataire = r.locataire.email === utilisateur?.email
               const peutConfirmer = !estLocataire && r.statut === 'EN_ATTENTE'
               const peutAnnuler = r.statut !== 'ANNULEE'
+              const peutSignaler = !estLocataire && !aRole('ROLE_ADMIN')
 
               return (
                 <tr key={r.id}>
@@ -90,7 +118,51 @@ export default function ListeReservations({ reservations, utilisateur, onMiseAJo
                           Annuler
                         </button>
                       )}
+                      {peutSignaler && signalementOuvert !== r.id && (
+                        <button
+                          type="button"
+                          onClick={() => ouvrirSignalement(r.id)}
+                          className="text-sm font-medium text-ocean-600 hover:text-coral-500"
+                        >
+                          Signaler un problème
+                        </button>
+                      )}
                     </div>
+
+                    {peutSignaler && signalementOuvert === r.id && (
+                      <div className="mt-3 flex flex-col gap-2">
+                        <textarea
+                          className="input-field"
+                          rows={2}
+                          placeholder="Décrivez le problème…"
+                          value={messageSignalement}
+                          onChange={(e) => setMessageSignalement(e.target.value)}
+                        />
+                        <div className="flex gap-3">
+                          <button
+                            type="button"
+                            onClick={() => envoyerSignalement(r)}
+                            disabled={envoiSignalement || !messageSignalement.trim()}
+                            className="btn-accent !px-4 !py-1.5 text-sm"
+                          >
+                            Envoyer
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSignalementOuvert(null)}
+                            className="text-sm font-medium text-ocean-500 hover:text-coral-500"
+                          >
+                            Annuler
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {peutSignaler && confirmationSignalement === r.id && (
+                      <p className="mt-2 text-sm text-ocean-600">
+                        Signalement envoyé, l'administrateur vous répondra prochainement.
+                      </p>
+                    )}
                   </td>
                 </tr>
               )

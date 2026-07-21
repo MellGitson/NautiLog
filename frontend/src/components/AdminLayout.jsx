@@ -5,6 +5,7 @@ const SECTIONS = [
   { to: '/admin/flotte', label: 'Flotte' },
   { to: '/admin/ports', label: 'Ports' },
   { to: '/admin/reservations', label: 'Réservations' },
+  { to: '/admin/signalements', label: 'Signalements' },
   { to: '/admin/utilisateurs', label: 'Utilisateurs' },
 ]
 

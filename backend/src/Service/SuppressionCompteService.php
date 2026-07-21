@@ -8,6 +8,7 @@ use App\Entity\LogEntry;
 use App\Entity\Notification;
 use App\Entity\Repair;
 use App\Entity\Reservation;
+use App\Entity\Signalement;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -15,6 +16,7 @@ class SuppressionCompteService
 {
     public function __construct(
         private EntityManagerInterface $em,
+        private NotificationService $notificationService,
     ) {
     }
 
@@ -29,7 +31,24 @@ class SuppressionCompteService
         // Réservations de cet utilisateur en tant que locataire sur les bateaux d'autrui.
         $reservationsLocataire = $this->em->getRepository(Reservation::class)->findBy(['renter' => $user]);
         foreach ($reservationsLocataire as $reservation) {
+            $this->notificationService->detacherReservation($reservation);
+            foreach ($this->em->getRepository(Signalement::class)->findBy(['reservation' => $reservation]) as $signalement) {
+                $this->em->remove($signalement);
+            }
             $this->em->remove($reservation);
+        }
+
+        $this->notificationService->notifierAdmins(
+            \sprintf('Le compte "%s" a été supprimé (RGPD).', $user->getEmail())
+        );
+
+        // Flush séparé : les notifications détachées (UPDATE) doivent être persistées
+        // avant que les réservations qu'elles référençaient soient supprimées, sans quoi
+        // Doctrine peut ordonner le DELETE de la réservation avant l'UPDATE de la notif.
+        $this->em->flush();
+
+        foreach ($this->em->getRepository(Notification::class)->findBy(['recipient' => $user]) as $notification) {
+            $this->em->remove($notification);
         }
 
         $this->em->remove($user);
@@ -46,18 +65,23 @@ class SuppressionCompteService
                 && $reservation->getStatus() !== Reservation::STATUS_CANCELLED;
 
             if ($notifierCeLocataire) {
-                $notification = new Notification();
-                $notification->setRecipient($reservation->getRenter());
-                $notification->setMessage(\sprintf(
-                    'Votre réservation sur "%s" du %s au %s a été annulée : le propriétaire a supprimé son compte.',
-                    $bateau->getName(),
-                    $reservation->getStartDate()->format('d/m/Y'),
-                    $reservation->getEndDate()->format('d/m/Y')
-                ));
-                $notification->setSuggestions($suggestions);
-                $this->em->persist($notification);
+                $this->notificationService->notifier(
+                    $reservation->getRenter(),
+                    Notification::TYPE_RGPD_SUPPRESSION,
+                    \sprintf(
+                        'Votre réservation sur "%s" du %s au %s a été annulée : le propriétaire a supprimé son compte.',
+                        $bateau->getName(),
+                        $reservation->getStartDate()->format('d/m/Y'),
+                        $reservation->getEndDate()->format('d/m/Y')
+                    ),
+                    $suggestions
+                );
             }
 
+            $this->notificationService->detacherReservation($reservation);
+            foreach ($this->em->getRepository(Signalement::class)->findBy(['reservation' => $reservation]) as $signalement) {
+                $this->em->remove($signalement);
+            }
             $this->em->remove($reservation);
         }
 

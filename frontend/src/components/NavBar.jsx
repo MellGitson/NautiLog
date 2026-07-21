@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
+import IconeCloche from './icons/IconeCloche'
 
 export default function NavBar() {
   const { estConnecte, aRole, user, deconnexion } = useAuth()
@@ -46,11 +47,19 @@ export default function NavBar() {
               <NavLink to="/ports" className={lien}>Ports</NavLink>
               <NavLink to="/trajets" className={lien}>Trajets</NavLink>
               <NavLink to="/reservations" className={lien}>Réservations</NavLink>
-              <NavLink to="/notifications" className={`${lien} relative`}>
-                Notifications
+              <NavLink
+                to="/notifications"
+                aria-label="Notifications"
+                className={({ isActive }) =>
+                  `relative flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                    isActive ? 'text-coral-500' : 'text-ocean-700 hover:text-coral-500'
+                  }`
+                }
+              >
+                <IconeCloche />
                 {nombreNonLues > 0 && (
-                  <span className="absolute -right-3 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-coral-500 text-[10px] font-semibold text-white">
-                    {nombreNonLues}
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-coral-500 text-[10px] font-semibold text-white">
+                    {nombreNonLues > 9 ? '9+' : nombreNonLues}
                   </span>
                 )}
               </NavLink>

@@ -54,8 +54,10 @@ class NotificationController extends AbstractController
     {
         return [
             'id' => $notification->getId(),
+            'type' => $notification->getType(),
             'message' => $notification->getMessage(),
             'suggestions' => $notification->getSuggestions(),
+            'reservationId' => $notification->getReservation()?->getId(),
             'lu' => $notification->isRead(),
             'creeLe' => $notification->getCreatedAt()?->format('Y-m-d H:i:s'),
         ];
