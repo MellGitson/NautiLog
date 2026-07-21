@@ -119,7 +119,7 @@ class SignalementController extends AbstractController
         }
 
         $signalement->setReponseAdmin($dto->reponse);
-        $signalement->setStatus(Signalement::STATUS_REPONDU);
+        $signalement->setStatus(Signalement::STATUS_TRAITE);
         $signalement->setRepondantAdmin($admin);
         $signalement->setRespondedAt(new \DateTimeImmutable());
 

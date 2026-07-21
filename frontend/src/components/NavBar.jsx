@@ -56,9 +56,9 @@ export default function NavBar() {
                   }`
                 }
               >
-                <IconeCloche />
+                <IconeCloche active={nombreNonLues > 0} />
                 {nombreNonLues > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-coral-500 text-[10px] font-semibold text-white">
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-coral-500 px-1 text-[10px] font-semibold text-white ring-2 ring-white">
                     {nombreNonLues > 9 ? '9+' : nombreNonLues}
                   </span>
                 )}
