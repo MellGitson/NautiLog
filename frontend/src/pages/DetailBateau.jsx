@@ -30,6 +30,16 @@ export default function DetailBateau() {
   const peutGerer = aRole('ROLE_ADMIN') || bateau.proprietaire.email === user?.email
   const photo = bateau.photoUrl ? bateau.photoUrl : photoBateau(bateau)
 
+  const telechargerPdf = async () => {
+    const { data } = await api.get(`/bateaux/${id}/export-pdf`, { responseType: 'blob' })
+    const url = window.URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
+    const lien = document.createElement('a')
+    lien.href = url
+    lien.download = `carnet-navigation-${bateau.matricule || bateau.id}.pdf`
+    lien.click()
+    window.URL.revokeObjectURL(url)
+  }
+
   return (
     <main className="mx-auto max-w-2xl">
       <Link to="/bateaux" className="text-sm font-medium">← Retour à la liste</Link>
@@ -112,6 +122,12 @@ export default function DetailBateau() {
 
       {zoom && (
         <Lightbox src={photo} alt={`${bateau.nom} (${bateau.type})`} onClose={() => setZoom(false)} />
+      )}
+
+      {peutGerer && (
+        <button type="button" onClick={telechargerPdf} className="btn-ghost mt-4 !px-4 !py-1.5 text-sm">
+          📄 Télécharger le carnet de navigation (PDF)
+        </button>
       )}
 
       {peutGerer && <GestionBateau bateau={bateau} onMiseAJour={recharger} />}

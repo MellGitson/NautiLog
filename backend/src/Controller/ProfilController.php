@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Dto\ProfilDto;
 use App\Entity\User;
+use App\Service\SuppressionCompteService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,6 +21,7 @@ class ProfilController extends AbstractController
         private EntityManagerInterface $em,
         private ValidatorInterface $validator,
         private SerializerInterface $serializer,
+        private SuppressionCompteService $suppressionCompteService,
     ) {
     }
 
@@ -58,6 +60,17 @@ class ProfilController extends AbstractController
         $this->em->flush();
 
         return $this->json($this->serialize($user));
+    }
+
+    #[Route('', name: 'supprimer', methods: ['DELETE'])]
+    public function supprimer(): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $this->suppressionCompteService->supprimerCompte($user);
+
+        return $this->json(['message' => 'Votre compte et toutes les données associées ont été supprimés.'], Response::HTTP_OK);
     }
 
     private function serialize(User $user): array
