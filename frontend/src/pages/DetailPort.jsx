@@ -4,6 +4,7 @@ import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import CarteEmplacements from '../components/CarteEmplacements'
 import GestionEmplacements from '../components/GestionEmplacements'
+import DemandeEmplacement from '../components/DemandeEmplacement'
 
 export default function DetailPort() {
   const { id } = useParams()
@@ -13,10 +14,21 @@ export default function DetailPort() {
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState(null)
 
+  const chargerPort = () => {
+    api.get(`/ports/${id}`)
+      .then((res) => setPort(res.data))
+      .catch(() => setErreur('Impossible de charger ce port.'))
+  }
+
   const chargerEmplacements = () => {
     api.get(`/ports/${id}/emplacements`)
       .then((res) => setEmplacements(res.data))
       .catch(() => {})
+  }
+
+  const chargerTout = () => {
+    chargerPort()
+    chargerEmplacements()
   }
 
   useEffect(() => {
@@ -68,7 +80,11 @@ export default function DetailPort() {
       )}
 
       {aRole('ROLE_ADMIN') && (
-        <GestionEmplacements port={port} emplacements={emplacements} onMiseAJour={chargerEmplacements} />
+        <GestionEmplacements port={port} emplacements={emplacements} onMiseAJour={chargerTout} />
+      )}
+
+      {aRole('ROLE_OWNER') && (
+        <DemandeEmplacement emplacements={emplacements} onMiseAJour={chargerTout} />
       )}
     </main>
   )
