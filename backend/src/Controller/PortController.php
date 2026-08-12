@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Dto\PortDto;
 use App\Entity\Berth;
+use App\Entity\BerthRequest;
 use App\Entity\Port;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -117,15 +118,15 @@ class PortController extends AbstractController
 
         $bloques = [];
         foreach ($ports as $port) {
-            $berthsOccupes = $this->compterBerthsOccupes($port);
-            if ($berthsOccupes > 0) {
-                $bloques[] = ['id' => $port->getId(), 'nom' => $port->getName(), 'bateaux' => $berthsOccupes];
+            $obstacles = $this->obstaclesSuppression($port);
+            if (!empty($obstacles)) {
+                $bloques[] = ['id' => $port->getId(), 'nom' => $port->getName(), 'obstacles' => $obstacles];
             }
         }
 
         if (!empty($bloques)) {
             return $this->json([
-                'erreur' => 'Certains ports contiennent encore des bateaux et ne peuvent pas être supprimés.',
+                'erreur' => 'Certains ports contiennent encore des bateaux ou demandes en attente et ne peuvent pas être supprimés.',
                 'bloques' => $bloques,
             ], Response::HTTP_CONFLICT);
         }
@@ -153,9 +154,12 @@ class PortController extends AbstractController
             return $this->json(['erreur' => 'Port introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        $berthsOccupes = $this->compterBerthsOccupes($port);
-        if ($berthsOccupes > 0) {
-            return $this->json(['erreur' => \sprintf('Ce port contient encore %d bateau(x), déplacez-les avant de le supprimer.', $berthsOccupes)], Response::HTTP_CONFLICT);
+        $obstacles = $this->obstaclesSuppression($port);
+        if (!empty($obstacles)) {
+            return $this->json([
+                'erreur' => \sprintf('Ce port contient encore %d bateau(x) ou demande(s) en attente, à traiter avant de le supprimer.', \count($obstacles)),
+                'obstacles' => $obstacles,
+            ], Response::HTTP_CONFLICT);
         }
 
         $this->supprimerBerthsVides($port);
@@ -165,14 +169,45 @@ class PortController extends AbstractController
         return $this->json(['message' => 'Port supprimé avec succès.'], Response::HTTP_OK);
     }
 
-    private function compterBerthsOccupes(Port $port): int
+    /**
+     * @return array<int, array{type: string, bateau: ?string, emplacement: ?string, demandeur: ?string}>
+     */
+    private function obstaclesSuppression(Port $port): array
     {
-        return $port->getBoats()->count();
+        $obstacles = [];
+
+        foreach ($port->getBoats() as $bateau) {
+            $obstacles[] = [
+                'type' => 'bateau_amarre',
+                'bateau' => $bateau->getName(),
+                'emplacement' => null,
+                'demandeur' => null,
+            ];
+        }
+
+        foreach ($this->em->getRepository(Berth::class)->findBy(['port' => $port]) as $berth) {
+            $demandesEnAttente = $this->em->getRepository(BerthRequest::class)
+                ->findBy(['berth' => $berth, 'status' => BerthRequest::STATUS_PENDING]);
+
+            foreach ($demandesEnAttente as $demande) {
+                $obstacles[] = [
+                    'type' => 'demande_en_attente',
+                    'bateau' => $demande->getBoat()->getName(),
+                    'emplacement' => $berth->getLabel(),
+                    'demandeur' => $demande->getRequester()->getEmail(),
+                ];
+            }
+        }
+
+        return $obstacles;
     }
 
     private function supprimerBerthsVides(Port $port): void
     {
         foreach ($this->em->getRepository(Berth::class)->findBy(['port' => $port]) as $berth) {
+            foreach ($this->em->getRepository(BerthRequest::class)->findBy(['berth' => $berth]) as $demande) {
+                $this->em->remove($demande);
+            }
             $this->em->remove($berth);
         }
     }

@@ -51,14 +51,27 @@ export default function AdminPorts() {
       setSelectionnes([])
       charger()
     } catch (err) {
-      const bloques = err.response?.data?.bloques
-      const messageBloques = bloques?.length
-        ? ` (${bloques.map((b) => `${b.nom} : ${b.bateaux} bateau(x)`).join(', ')})`
-        : ''
-      setErreurSuppression((err.response?.data?.erreur || 'Erreur lors de la suppression.') + messageBloques)
+      setErreurSuppression(formaterErreurSuppression(err))
     } finally {
       setSuppressionEnCours(false)
     }
+  }
+
+  const formaterErreurSuppression = (err) => {
+    const message = err.response?.data?.erreur || 'Erreur lors de la suppression.'
+    const bloques = err.response?.data?.bloques
+
+    if (!bloques?.length) return message
+
+    const detail = bloques.map((bloque) => {
+      const obstacles = bloque.obstacles.map((o) => {
+        if (o.type === 'bateau_amarre') return `bateau "${o.bateau}" amarré`
+        return `demande en attente pour "${o.bateau}" sur l'emplacement ${o.emplacement} (demandé par ${o.demandeur})`
+      })
+      return `${bloque.nom} : ${obstacles.join(', ')}`
+    }).join(' — ')
+
+    return `${message} ${detail}`
   }
 
   return (

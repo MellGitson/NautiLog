@@ -235,6 +235,130 @@ class PortControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(404);
     }
 
+    // DELETE /api/ports/{id} — emplacement avec demande APPROUVEE/REFUSEE (historique) → suppression autorisée
+    public function testSupprimerPortAvecHistoriqueDemandes(): void
+    {
+        $client = static::createClient();
+        $tokenAdmin = $this->creerAdminEtToken($client);
+
+        $client->request('POST', '/api/ports', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenAdmin",
+        ], json_encode([
+            'nom' => 'Port Avec Historique',
+            'ville' => 'Nice',
+            'latitude' => 43.7009,
+            'longitude' => 7.2683,
+            'capacite' => 8,
+        ]));
+        $portId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('POST', "/api/ports/$portId/emplacements", [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenAdmin",
+        ], json_encode(['label' => 'A1']));
+        $emplacementId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $emailOwner = 'owner_historique_'.uniqid().'@nautilog.fr';
+        $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => $emailOwner,
+            'password' => 'Password1234!',
+            'role' => 'ROLE_OWNER',
+        ]));
+        $client->request('POST', '/api/auth/login', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => $emailOwner,
+            'password' => 'Password1234!',
+        ]));
+        $tokenOwner = json_decode($client->getResponse()->getContent(), true)['token'];
+
+        $client->request('POST', '/api/bateaux', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenOwner",
+        ], json_encode(['nom' => 'Bateau Historique', 'type' => 'Voilier', 'statut' => 'DISPONIBLE']));
+        $bateauId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('POST', '/api/demandes-emplacements', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenOwner",
+        ], json_encode(['emplacementId' => $emplacementId, 'bateauId' => $bateauId]));
+        $this->assertResponseStatusCodeSame(201);
+        $demandeId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('PATCH', "/api/demandes-emplacements/$demandeId/statut", [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenAdmin",
+        ], json_encode(['statut' => 'REFUSEE']));
+        $this->assertResponseStatusCodeSame(200);
+
+        $client->request('DELETE', "/api/ports/$portId", [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $tokenAdmin",
+        ]);
+
+        $this->assertResponseStatusCodeSame(200);
+    }
+
+    // DELETE /api/ports/{id} — demande EN_ATTENTE → 409 avec détail des obstacles
+    public function testSupprimerPortAvecDemandeEnAttenteDetaillee(): void
+    {
+        $client = static::createClient();
+        $tokenAdmin = $this->creerAdminEtToken($client);
+
+        $client->request('POST', '/api/ports', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenAdmin",
+        ], json_encode([
+            'nom' => 'Port Avec Demande',
+            'ville' => 'Nice',
+            'latitude' => 43.7009,
+            'longitude' => 7.2683,
+            'capacite' => 8,
+        ]));
+        $portId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('POST', "/api/ports/$portId/emplacements", [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenAdmin",
+        ], json_encode(['label' => 'A1']));
+        $emplacementId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $emailOwner = 'owner_attente_'.uniqid().'@nautilog.fr';
+        $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => $emailOwner,
+            'password' => 'Password1234!',
+            'role' => 'ROLE_OWNER',
+        ]));
+        $client->request('POST', '/api/auth/login', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => $emailOwner,
+            'password' => 'Password1234!',
+        ]));
+        $tokenOwner = json_decode($client->getResponse()->getContent(), true)['token'];
+
+        $client->request('POST', '/api/bateaux', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenOwner",
+        ], json_encode(['nom' => 'Bateau En Attente', 'type' => 'Voilier', 'statut' => 'DISPONIBLE']));
+        $bateauId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('POST', '/api/demandes-emplacements', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenOwner",
+        ], json_encode(['emplacementId' => $emplacementId, 'bateauId' => $bateauId]));
+        $this->assertResponseStatusCodeSame(201);
+
+        $client->request('DELETE', "/api/ports/$portId", [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $tokenAdmin",
+        ]);
+
+        $this->assertResponseStatusCodeSame(409);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('obstacles', $data);
+        $this->assertCount(1, $data['obstacles']);
+        $this->assertSame('demande_en_attente', $data['obstacles'][0]['type']);
+        $this->assertSame('Bateau En Attente', $data['obstacles'][0]['bateau']);
+        $this->assertSame('A1', $data['obstacles'][0]['emplacement']);
+        $this->assertSame($emailOwner, $data['obstacles'][0]['demandeur']);
+    }
+
     // DELETE /api/ports/{id} — port avec bateaux rattachés → 409
     public function testSupprimerPortAvecBateauxRattaches(): void
     {
