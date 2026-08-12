@@ -23,10 +23,4 @@ class ProfilDto
         message: 'Le numéro de téléphone est invalide.'
     )]
     public ?string $phone = null;
-
-    #[Assert\Length(
-        max: 255,
-        maxMessage: "L'URL de l'avatar ne peut pas dépasser {{ limit }} caractères."
-    )]
-    public ?string $avatarUrl = null;
 }

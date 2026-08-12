@@ -61,6 +61,8 @@ class RepairController extends AbstractController
         $reparation->setDescription($dto->description);
         $reparation->setDate($date);
 
+        $bateau->setUpdatedAt(new \DateTimeImmutable());
+
         $this->em->persist($reparation);
         $this->em->flush();
 

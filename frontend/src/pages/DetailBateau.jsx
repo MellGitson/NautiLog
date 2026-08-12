@@ -7,6 +7,12 @@ import Lightbox from '../components/Lightbox'
 import GestionBateau from '../components/GestionBateau'
 import FormulaireReservation from '../components/FormulaireReservation'
 
+const BADGES = {
+  DISPONIBLE: 'badge-disponible',
+  LOUÉ: 'badge-loue',
+  EN_RÉPARATION: 'badge-reparation',
+}
+
 export default function DetailBateau() {
   const { id } = useParams()
   const { user, aRole } = useAuth()
@@ -29,6 +35,7 @@ export default function DetailBateau() {
 
   const peutGerer = aRole('ROLE_ADMIN') || bateau.proprietaire.email === user?.email
   const photo = bateau.photoUrl ? bateau.photoUrl : photoBateau(bateau)
+  const enReparation = bateau.statut === 'EN_RÉPARATION'
 
   const telechargerPdf = async () => {
     const { data } = await api.get(`/bateaux/${id}/export-pdf`, { responseType: 'blob' })
@@ -44,7 +51,7 @@ export default function DetailBateau() {
     <main className="mx-auto max-w-2xl">
       <Link to="/bateaux" className="text-sm font-medium">← Retour à la liste</Link>
 
-      <div className="card mt-4 !p-0 overflow-hidden">
+      <div className={`card mt-4 !p-0 overflow-hidden ${enReparation ? 'opacity-50' : ''}`}>
         <button
           type="button"
           onClick={() => setZoom(true)}
@@ -73,7 +80,7 @@ export default function DetailBateau() {
 
             <div>
               <dt className="text-sm font-medium text-ocean-500">Statut</dt>
-              <dd className="text-ocean-900">{bateau.statut}</dd>
+              <dd><span className={BADGES[bateau.statut] ?? 'badge bg-ocean-100 text-ocean-700'}>{bateau.statut}</span></dd>
             </div>
 
             <div>

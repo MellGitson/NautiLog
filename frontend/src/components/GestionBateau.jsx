@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import api from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
 const STATUTS = ['DISPONIBLE', 'LOUÉ', 'EN_RÉPARATION']
 
@@ -10,6 +11,8 @@ const STYLES_STATUT = {
 }
 
 export default function GestionBateau({ bateau, onMiseAJour }) {
+  const { aRole } = useAuth()
+  const seulAdminPeutChangerStatut = bateau.statut === 'EN_RÉPARATION' && !aRole('ROLE_ADMIN')
   const [valeurs, setValeurs] = useState({
     nom: bateau.nom,
     type: bateau.type,
@@ -32,7 +35,7 @@ export default function GestionBateau({ bateau, onMiseAJour }) {
   }
 
   const changerStatut = async (statut) => {
-    if (statut === valeurs.statut || statutEnCours) return
+    if (statut === valeurs.statut || statutEnCours || seulAdminPeutChangerStatut) return
     setErreur(null)
     setSucces(null)
     setStatutEnCours(true)
@@ -122,6 +125,9 @@ export default function GestionBateau({ bateau, onMiseAJour }) {
 
       <div className="mt-5 rounded-xl border border-ocean-100 bg-white p-5">
         <p className="text-sm font-medium text-ocean-500">Statut</p>
+        {seulAdminPeutChangerStatut && (
+          <p className="mt-1 text-xs text-ocean-400">Seul un administrateur peut modifier le statut d'un bateau en réparation.</p>
+        )}
         <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Changer le statut du bateau">
           {STATUTS.map((s) => {
             const style = STYLES_STATUT[s]
@@ -130,7 +136,7 @@ export default function GestionBateau({ bateau, onMiseAJour }) {
               <button
                 key={s}
                 type="button"
-                disabled={statutEnCours}
+                disabled={statutEnCours || seulAdminPeutChangerStatut}
                 onClick={() => changerStatut(s)}
                 aria-pressed={actif}
                 className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors disabled:opacity-60 ${actif ? style.actif : style.inactif}`}

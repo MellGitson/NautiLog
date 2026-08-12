@@ -76,6 +76,10 @@ class ReservationController extends AbstractController
             return $this->json(['erreur' => 'Bateau introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
+        if ($bateau->getStatus() === Boat::STATUS_REPAIR) {
+            return $this->json(['erreur' => 'Ce bateau est en réparation et ne peut pas être réservé.'], Response::HTTP_CONFLICT);
+        }
+
         try {
             $dateDebut = new \DateTimeImmutable($dto->dateDebut);
             $dateFin = new \DateTimeImmutable($dto->dateFin);

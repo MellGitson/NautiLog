@@ -10,14 +10,26 @@ const BADGES = {
   EN_RÉPARATION: 'badge-reparation',
 }
 
-export default function CarteBateau({ bateau }) {
-  const { user } = useAuth()
+export default function CarteBateau({ bateau, selection }) {
+  const { user, aRole } = useAuth()
   const [zoom, setZoom] = useState(false)
   const photo = bateau.photoUrl ? bateau.photoUrl : photoBateau(bateau)
   const estMonBateau = bateau.proprietaire?.email === user?.email
+  const enReparation = bateau.statut === 'EN_RÉPARATION'
 
   return (
-    <article className="card !p-0 flex flex-col overflow-hidden">
+    <article className={`relative card !p-0 flex flex-col overflow-hidden ${enReparation ? 'opacity-50' : ''} ${selection?.checked ? 'ring-2 ring-coral-500' : ''}`}>
+      {selection && (
+        <label className="absolute left-2 top-2 z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-white/90 shadow-sm">
+          <span className="sr-only">Sélectionner {bateau.nom}</span>
+          <input
+            type="checkbox"
+            checked={selection.checked}
+            onChange={() => selection.onToggle(bateau.id)}
+            className="h-4 w-4 accent-coral-600"
+          />
+        </label>
+      )}
       <button
         type="button"
         onClick={() => setZoom(true)}
@@ -29,7 +41,7 @@ export default function CarteBateau({ bateau }) {
           {bateau.type}
         </span>
         {estMonBateau && (
-          <span className="absolute left-2 top-2 badge bg-coral-500 text-white">
+          <span className={`absolute top-2 badge bg-coral-500 text-white ${selection ? 'left-11' : 'left-2'}`}>
             Mon bateau
           </span>
         )}
@@ -43,6 +55,9 @@ export default function CarteBateau({ bateau }) {
           </span>
         </div>
         {bateau.port && <p className="text-sm text-ocean-600">Port : {bateau.port.nom}</p>}
+        {aRole('ROLE_ADMIN') && bateau.misAJourLe && (
+          <p className="text-xs text-ocean-400">Mis à jour le {new Date(bateau.misAJourLe).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</p>
+        )}
         <Link to={`/bateaux/${bateau.id}`} className="mt-auto text-sm font-medium">
           Voir le détail →
         </Link>

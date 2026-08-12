@@ -1,8 +1,19 @@
 import { Link } from 'react-router-dom'
 
-export default function CartePort({ port, demandesEnAttente = 0 }) {
+export default function CartePort({ port, demandesEnAttente = 0, selection }) {
   return (
-    <article className="card flex flex-col gap-3">
+    <article className={`relative card flex flex-col gap-3 ${selection?.checked ? 'ring-2 ring-coral-500' : ''}`}>
+      {selection && (
+        <label className="absolute right-4 top-4 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-white/90 shadow-sm">
+          <span className="sr-only">Sélectionner {port.nom}</span>
+          <input
+            type="checkbox"
+            checked={selection.checked}
+            onChange={() => selection.onToggle(port.id)}
+            className="h-4 w-4 accent-coral-600"
+          />
+        </label>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <h2>{port.nom}</h2>
         {demandesEnAttente > 0 && (

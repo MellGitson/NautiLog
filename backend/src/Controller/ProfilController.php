@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Dto\ProfilDto;
 use App\Entity\User;
 use App\Service\SuppressionCompteService;
+use App\Service\UploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,6 +23,7 @@ class ProfilController extends AbstractController
         private ValidatorInterface $validator,
         private SerializerInterface $serializer,
         private SuppressionCompteService $suppressionCompteService,
+        private UploadService $uploadService,
     ) {
     }
 
@@ -55,8 +57,30 @@ class ProfilController extends AbstractController
         $user->setFirstName($dto->firstName);
         $user->setLastName($dto->lastName);
         $user->setPhone($dto->phone);
-        $user->setAvatarUrl($dto->avatarUrl);
 
+        $this->em->flush();
+
+        return $this->json($this->serialize($user));
+    }
+
+    #[Route('/avatar', name: 'avatar', methods: ['POST'])]
+    public function uploaderAvatar(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $fichier = $request->files->get('avatar');
+        if (!$fichier) {
+            return $this->json(['erreur' => 'Aucun fichier reçu.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $avatarUrl = $this->uploadService->uploaderAvatar($fichier);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['erreur' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $user->setAvatarUrl($avatarUrl);
         $this->em->flush();
 
         return $this->json($this->serialize($user));

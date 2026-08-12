@@ -3,9 +3,20 @@
 namespace App\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ProfilControllerTest extends WebTestCase
 {
+    private function creerFichierImageTest(): UploadedFile
+    {
+        $chemin = sys_get_temp_dir().'/test-avatar-'.uniqid().'.png';
+        // Un PNG 1x1 minimal valide.
+        $pngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+        file_put_contents($chemin, base64_decode($pngBase64));
+
+        return new UploadedFile($chemin, 'avatar.png', 'image/png', null, true);
+    }
+
     private function creerUtilisateurEtToken(mixed $client, string $email, string $role): string
     {
         $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
@@ -103,5 +114,43 @@ class ProfilControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode($client->getResponse()->getContent(), true);
         $this->assertSame(['ROLE_RENTER', 'ROLE_USER'], $data['roles']);
+    }
+
+    // POST /api/me/avatar — upload valide
+    public function testUploaderAvatarValide(): void
+    {
+        $client = static::createClient();
+        $token = $this->creerUtilisateurEtToken($client, 'profil_avatar@nautilog.fr', 'ROLE_OWNER');
+
+        $client->request('POST', '/api/me/avatar', [], ['avatar' => $this->creerFichierImageTest()], [
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertNotNull($data['avatarUrl']);
+        $this->assertStringStartsWith('/uploads/avatars/', $data['avatarUrl']);
+    }
+
+    // POST /api/me/avatar — sans fichier → 422
+    public function testUploaderAvatarSansFichier(): void
+    {
+        $client = static::createClient();
+        $token = $this->creerUtilisateurEtToken($client, 'profil_avatar_vide@nautilog.fr', 'ROLE_OWNER');
+
+        $client->request('POST', '/api/me/avatar', [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    // POST /api/me/avatar — sans authentification → 401
+    public function testUploaderAvatarSansAuth(): void
+    {
+        $client = static::createClient();
+        $client->request('POST', '/api/me/avatar', [], ['avatar' => $this->creerFichierImageTest()]);
+
+        $this->assertResponseStatusCodeSame(401);
     }
 }

@@ -8,6 +8,15 @@ export default function FormulaireReservation({ bateau }) {
   const [succes, setSucces] = useState(false)
   const [enCours, setEnCours] = useState(false)
 
+  if (bateau.statut === 'EN_RÉPARATION') {
+    return (
+      <div className="card mt-6 opacity-50">
+        <h2>Réserver ce bateau</h2>
+        <p className="mt-1 text-sm text-ocean-500">Ce bateau est en réparation et ne peut pas être réservé pour le moment.</p>
+      </div>
+    )
+  }
+
   const soumettre = async (e) => {
     e.preventDefault()
     setErreur(null)
