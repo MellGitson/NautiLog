@@ -24,13 +24,18 @@ class ReservationControllerTest extends WebTestCase
 
     private function creerBateau(mixed $client, string $tokenOwner): int
     {
+        return $this->creerBateauAvecStatut($client, $tokenOwner, 'DISPONIBLE');
+    }
+
+    private function creerBateauAvecStatut(mixed $client, string $tokenOwner, string $statut): int
+    {
         $client->request('POST', '/api/bateaux', [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer $tokenOwner",
         ], json_encode([
             'nom' => 'Bateau Réservation',
             'type' => 'Voilier',
-            'statut' => 'DISPONIBLE',
+            'statut' => $statut,
         ]));
 
         return json_decode($client->getResponse()->getContent(), true)['id'];
@@ -97,6 +102,26 @@ class ReservationControllerTest extends WebTestCase
             'bateauId' => $bateauId,
             'dateDebut' => '2026-08-05',
             'dateFin' => '2026-08-15',
+        ]));
+
+        $this->assertResponseStatusCodeSame(409);
+    }
+
+    // POST /api/reservations — bateau en réparation → 409
+    public function testCreerReservationBateauEnReparation(): void
+    {
+        $client = static::createClient();
+        $tokenOwner = $this->creerUtilisateurEtToken($client, 'owner_resa_reparation@nautilog.fr', 'ROLE_OWNER');
+        $bateauId = $this->creerBateauAvecStatut($client, $tokenOwner, 'EN_RÉPARATION');
+        $tokenRenter = $this->creerUtilisateurEtToken($client, 'renter_resa_reparation@nautilog.fr', 'ROLE_RENTER');
+
+        $client->request('POST', '/api/reservations', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenRenter",
+        ], json_encode([
+            'bateauId' => $bateauId,
+            'dateDebut' => '2026-08-01',
+            'dateFin' => '2026-08-05',
         ]));
 
         $this->assertResponseStatusCodeSame(409);

@@ -146,6 +146,14 @@ class BateauController extends AbstractController
             return $this->json($this->formaterErreurs($erreurs), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        if (
+            $bateau->getStatus() === Boat::STATUS_REPAIR
+            && $dto->statut !== Boat::STATUS_REPAIR
+            && !$this->isGranted('ROLE_ADMIN')
+        ) {
+            return $this->json(['erreur' => 'Seul un administrateur peut changer le statut d\'un bateau en réparation.'], Response::HTTP_FORBIDDEN);
+        }
+
         $bateau->setName($dto->nom);
         $bateau->setType($dto->type);
         $bateau->setStatus($dto->statut);

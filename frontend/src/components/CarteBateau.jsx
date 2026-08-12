@@ -15,9 +15,10 @@ export default function CarteBateau({ bateau }) {
   const [zoom, setZoom] = useState(false)
   const photo = bateau.photoUrl ? bateau.photoUrl : photoBateau(bateau)
   const estMonBateau = bateau.proprietaire?.email === user?.email
+  const enReparation = bateau.statut === 'EN_RÉPARATION'
 
   return (
-    <article className="card !p-0 flex flex-col overflow-hidden">
+    <article className={`card !p-0 flex flex-col overflow-hidden ${enReparation ? 'opacity-50' : ''}`}>
       <button
         type="button"
         onClick={() => setZoom(true)}

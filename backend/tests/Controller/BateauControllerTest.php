@@ -276,4 +276,66 @@ class BateauControllerTest extends WebTestCase
 
         $this->assertResponseStatusCodeSame(403);
     }
+
+    // PUT /api/bateaux/{id} — le propriétaire ne peut pas changer le statut d'un bateau en réparation → 403
+    public function testProprietaireNePeutPasChangerStatutBateauEnReparation(): void
+    {
+        $client = static::createClient();
+        $token = $this->creerUtilisateurEtToken($client, 'owner_reparation@nautilog.fr', 'ROLE_OWNER');
+
+        $client->request('POST', '/api/bateaux', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ], json_encode([
+            'nom' => 'Bateau En Réparation',
+            'type' => 'Voilier',
+            'statut' => 'EN_RÉPARATION',
+        ]));
+
+        $id = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('PUT', "/api/bateaux/$id", [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ], json_encode([
+            'nom' => 'Bateau En Réparation',
+            'type' => 'Voilier',
+            'statut' => 'DISPONIBLE',
+        ]));
+
+        $this->assertResponseStatusCodeSame(403);
+    }
+
+    // PUT /api/bateaux/{id} — un admin peut changer le statut d'un bateau en réparation
+    public function testAdminPeutChangerStatutBateauEnReparation(): void
+    {
+        $client = static::createClient();
+        $tokenOwner = $this->creerUtilisateurEtToken($client, 'owner_reparation_admin@nautilog.fr', 'ROLE_OWNER');
+
+        $client->request('POST', '/api/bateaux', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenOwner",
+        ], json_encode([
+            'nom' => 'Bateau Réparé',
+            'type' => 'Voilier',
+            'statut' => 'EN_RÉPARATION',
+        ]));
+
+        $id = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $tokenAdmin = $this->creerUtilisateurEtToken($client, 'admin_reparation@nautilog.fr', 'ROLE_ADMIN');
+
+        $client->request('PUT', "/api/bateaux/$id", [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenAdmin",
+        ], json_encode([
+            'nom' => 'Bateau Réparé',
+            'type' => 'Voilier',
+            'statut' => 'DISPONIBLE',
+        ]));
+
+        $this->assertResponseStatusCodeSame(200);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('DISPONIBLE', $data['statut']);
+    }
 }
