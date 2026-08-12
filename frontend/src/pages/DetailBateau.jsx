@@ -35,7 +35,7 @@ export default function DetailBateau() {
     const url = window.URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
     const lien = document.createElement('a')
     lien.href = url
-    lien.download = `carnet-navigation-${bateau.matricule || bateau.id}.pdf`
+    lien.download = `carnet-navigation-${bateau.id}.pdf`
     lien.click()
     window.URL.revokeObjectURL(url)
   }
@@ -90,13 +90,6 @@ export default function DetailBateau() {
               <div>
                 <dt className="text-sm font-medium text-ocean-500">Port</dt>
                 <dd className="text-ocean-900">{bateau.port.nom} — {bateau.port.ville}</dd>
-              </div>
-            )}
-
-            {bateau.matricule && (
-              <div>
-                <dt className="text-sm font-medium text-ocean-500">Matricule</dt>
-                <dd className="text-ocean-900">{bateau.matricule}</dd>
               </div>
             )}
           </dl>

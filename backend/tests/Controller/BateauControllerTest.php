@@ -22,14 +22,77 @@ class BateauControllerTest extends WebTestCase
         return json_decode($client->getResponse()->getContent(), true)['token'];
     }
 
-    // GET /api/bateaux — liste publique
-    public function testListeBateauxPublique(): void
+    // GET /api/bateaux — sans authentification → 401
+    public function testListeBateauxSansAuth(): void
     {
         $client = static::createClient();
         $client->request('GET', '/api/bateaux');
 
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    // GET /api/bateaux — un owner ne voit que ses propres bateaux
+    public function testListeBateauxOwnerNeVoitQueSesBateaux(): void
+    {
+        $client = static::createClient();
+        $tokenOwnerA = $this->creerUtilisateurEtToken($client, 'owner_a_liste@nautilog.fr', 'ROLE_OWNER');
+
+        $client->request('POST', '/api/bateaux', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenOwnerA",
+        ], json_encode([
+            'nom' => 'Bateau de A',
+            'type' => 'Voilier',
+            'statut' => 'DISPONIBLE',
+        ]));
+
+        $tokenOwnerB = $this->creerUtilisateurEtToken($client, 'owner_b_liste@nautilog.fr', 'ROLE_OWNER');
+
+        $client->request('POST', '/api/bateaux', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenOwnerB",
+        ], json_encode([
+            'nom' => 'Bateau de B',
+            'type' => 'Zodiac',
+            'statut' => 'DISPONIBLE',
+        ]));
+
+        $client->request('GET', '/api/bateaux', [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $tokenOwnerB",
+        ]);
+
         $this->assertResponseIsSuccessful();
-        $this->assertJson($client->getResponse()->getContent());
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $noms = array_map(fn (array $bateau) => $bateau['nom'], $data);
+        $this->assertContains('Bateau de B', $noms);
+        $this->assertNotContains('Bateau de A', $noms);
+    }
+
+    // GET /api/bateaux — un renter voit tous les bateaux
+    public function testListeBateauxRenterVoitTout(): void
+    {
+        $client = static::createClient();
+        $tokenOwner = $this->creerUtilisateurEtToken($client, 'owner_c_liste@nautilog.fr', 'ROLE_OWNER');
+
+        $client->request('POST', '/api/bateaux', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenOwner",
+        ], json_encode([
+            'nom' => 'Bateau de C',
+            'type' => 'Voilier',
+            'statut' => 'DISPONIBLE',
+        ]));
+
+        $tokenRenter = $this->creerUtilisateurEtToken($client, 'renter_liste@nautilog.fr', 'ROLE_RENTER');
+
+        $client->request('GET', '/api/bateaux', [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $tokenRenter",
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $noms = array_map(fn (array $bateau) => $bateau['nom'], $data);
+        $this->assertContains('Bateau de C', $noms);
     }
 
     // POST /api/bateaux — créer un bateau en tant qu'owner
@@ -52,26 +115,24 @@ class BateauControllerTest extends WebTestCase
         $this->assertSame('Mon Voilier', $data['nom']);
     }
 
-    // POST /api/bateaux — avec matricule et description
-    public function testCreerBateauAvecMatriculeEtDescription(): void
+    // POST /api/bateaux — avec description
+    public function testCreerBateauAvecDescription(): void
     {
         $client = static::createClient();
-        $token = $this->creerUtilisateurEtToken($client, 'owner_matricule@nautilog.fr', 'ROLE_OWNER');
+        $token = $this->creerUtilisateurEtToken($client, 'owner_description@nautilog.fr', 'ROLE_OWNER');
 
         $client->request('POST', '/api/bateaux', [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer $token",
         ], json_encode([
-            'nom' => 'Voilier Immatriculé',
+            'nom' => 'Voilier Décrit',
             'type' => 'Voilier',
             'statut' => 'DISPONIBLE',
-            'matricule' => 'FR-1234-AB',
             'description' => 'Un très beau voilier.',
         ]));
 
         $this->assertResponseStatusCodeSame(201);
         $data = json_decode($client->getResponse()->getContent(), true);
-        $this->assertSame('FR-1234-AB', $data['matricule']);
         $this->assertSame('Un très beau voilier.', $data['description']);
         $this->assertArrayHasKey('reparations', $data);
         $this->assertSame([], $data['reparations']);

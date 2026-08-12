@@ -33,7 +33,19 @@ class BateauController extends AbstractController
     #[Route('', name: 'liste', methods: ['GET'])]
     public function liste(): JsonResponse
     {
-        $bateaux = $this->em->getRepository(Boat::class)->findAll();
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $utilisateur = $this->getUser();
+        $estProprietaireSeul = \in_array('ROLE_OWNER', $utilisateur->getRoles(), true)
+            && !\in_array('ROLE_ADMIN', $utilisateur->getRoles(), true)
+            && !\in_array('ROLE_RENTER', $utilisateur->getRoles(), true);
+
+        if ($estProprietaireSeul) {
+            $bateaux = $this->em->getRepository(Boat::class)->findBy(['owner' => $utilisateur]);
+        } else {
+            $bateaux = $this->em->getRepository(Boat::class)->findAll();
+        }
+
         $donnees = array_map(fn (Boat $bateau) => $this->serialiser($bateau), $bateaux);
 
         return $this->json($donnees, Response::HTTP_OK);
@@ -67,7 +79,6 @@ class BateauController extends AbstractController
         $bateau->setName($dto->nom);
         $bateau->setType($dto->type);
         $bateau->setStatus($dto->statut);
-        $bateau->setMatricule($dto->matricule);
         $bateau->setDescription($dto->description);
         $bateau->setOwner($this->getUser());
 
@@ -108,7 +119,6 @@ class BateauController extends AbstractController
         $bateau->setName($dto->nom);
         $bateau->setType($dto->type);
         $bateau->setStatus($dto->statut);
-        $bateau->setMatricule($dto->matricule);
         $bateau->setDescription($dto->description);
 
         if ($dto->portId) {
@@ -195,7 +205,7 @@ class BateauController extends AbstractController
 
         $pdf = $this->carnetPdfService->genererCarnetNavigation($bateau, $trajets);
 
-        $nomFichier = 'carnet-navigation-'.($bateau->getMatricule() ?: $bateau->getId()).'.pdf';
+        $nomFichier = 'carnet-navigation-'.$bateau->getId().'.pdf';
 
         return new Response($pdf, Response::HTTP_OK, [
             'Content-Type' => 'application/pdf',
@@ -210,7 +220,6 @@ class BateauController extends AbstractController
             'nom' => $bateau->getName(),
             'type' => $bateau->getType(),
             'statut' => $bateau->getStatus(),
-            'matricule' => $bateau->getMatricule(),
             'description' => $bateau->getDescription(),
             'photoUrl' => $bateau->getPhotoUrl(),
             'creeLe' => $bateau->getCreatedAt()?->format('Y-m-d H:i:s'),

@@ -8,7 +8,6 @@ export default function GestionBateau({ bateau, onMiseAJour }) {
     nom: bateau.nom,
     type: bateau.type,
     statut: bateau.statut,
-    matricule: bateau.matricule ?? '',
     description: bateau.description ?? '',
   })
   const [fichierPhoto, setFichierPhoto] = useState(null)
@@ -100,10 +99,6 @@ export default function GestionBateau({ bateau, onMiseAJour }) {
             <select id="statut" name="statut" value={valeurs.statut} onChange={gererChangement} className="input-field">
               {STATUTS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-          </div>
-          <div>
-            <label htmlFor="matricule" className="label-field">Matricule</label>
-            <input id="matricule" name="matricule" value={valeurs.matricule} onChange={gererChangement} className="input-field" />
           </div>
         </div>
         <div>
