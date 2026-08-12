@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import api from '../services/api'
 
@@ -13,10 +13,13 @@ const STYLES_STATUT = {
 
 export default function NouveauBateau() {
   const navigate = useNavigate()
+  const inputPhotoRef = useRef(null)
   const [ports, setPorts] = useState([])
   const [erreurs, setErreurs] = useState({})
   const [erreurGlobale, setErreurGlobale] = useState(null)
   const [enCours, setEnCours] = useState(false)
+  const [fichierPhoto, setFichierPhoto] = useState(null)
+  const [apercuPhoto, setApercuPhoto] = useState(null)
 
   const [form, setForm] = useState({
     nom: '',
@@ -30,6 +33,16 @@ export default function NouveauBateau() {
     api.get('/ports').then((res) => setPorts(res.data))
   }, [])
 
+  useEffect(() => {
+    if (!fichierPhoto) {
+      setApercuPhoto(null)
+      return
+    }
+    const url = URL.createObjectURL(fichierPhoto)
+    setApercuPhoto(url)
+    return () => URL.revokeObjectURL(url)
+  }, [fichierPhoto])
+
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
@@ -40,15 +53,17 @@ export default function NouveauBateau() {
     setErreurGlobale(null)
     setEnCours(true)
 
-    const payload = {
-      nom: form.nom,
-      type: form.type,
-      statut: form.statut,
-      portId: form.portId ? parseInt(form.portId, 10) : null,
-      description: form.description || null,
-    }
+    const formData = new FormData()
+    formData.append('nom', form.nom)
+    formData.append('type', form.type)
+    formData.append('statut', form.statut)
+    if (form.portId) formData.append('portId', form.portId)
+    if (form.description) formData.append('description', form.description)
+    if (fichierPhoto) formData.append('photo', fichierPhoto)
 
-    api.post('/bateaux', payload)
+    api.post('/bateaux', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
       .then((res) => navigate(`/bateaux/${res.data.id}`))
       .catch((err) => {
         if (err.response?.data?.erreurs) {
@@ -114,6 +129,30 @@ export default function NouveauBateau() {
               {erreurs.description && <p role="alert" className="mt-1 text-sm font-medium text-coral-600">{erreurs.description}</p>}
             </div>
           </div>
+        </div>
+
+        <div className="mt-5 rounded-xl border border-ocean-100 bg-white p-5">
+          <p className="text-sm font-medium text-ocean-500">Photo</p>
+          <div className="mt-3 flex items-center gap-4">
+            {apercuPhoto ? (
+              <img src={apercuPhoto} alt="Aperçu" className="h-16 w-24 rounded-lg object-cover" />
+            ) : (
+              <div className="flex h-16 w-24 items-center justify-center rounded-lg bg-ocean-50 text-xs text-ocean-400">
+                Aucune photo
+              </div>
+            )}
+            <button type="button" onClick={() => inputPhotoRef.current?.click()} className="btn-ghost !px-3 !py-1 text-sm">
+              {apercuPhoto ? 'Changer' : 'Choisir une photo'}
+            </button>
+            <input
+              ref={inputPhotoRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => setFichierPhoto(e.target.files[0] ?? null)}
+              className="hidden"
+            />
+          </div>
+          {erreurs.photo && <p role="alert" className="mt-2 text-sm font-medium text-coral-600">{erreurs.photo}</p>}
         </div>
 
         <div className="mt-5 rounded-xl border border-ocean-100 bg-white p-5">

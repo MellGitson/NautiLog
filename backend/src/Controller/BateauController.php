@@ -68,11 +68,23 @@ class BateauController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_OWNER');
 
-        $dto = $this->serializer->deserialize($request->getContent(), BateauDto::class, 'json');
+        $dto = $request->files->count() > 0
+            ? $this->deserialiserDepuisFormulaire($request)
+            : $this->serializer->deserialize($request->getContent(), BateauDto::class, 'json');
 
         $erreurs = $this->validator->validate($dto);
         if (count($erreurs) > 0) {
             return $this->json($this->formaterErreurs($erreurs), Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $photo = $request->files->get('photo');
+        $photoUrl = null;
+        if ($photo) {
+            try {
+                $photoUrl = $this->uploadService->uploaderPhotoBateau($photo);
+            } catch (\InvalidArgumentException $e) {
+                return $this->json(['erreur' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
         }
 
         $bateau = new Boat();
@@ -81,6 +93,10 @@ class BateauController extends AbstractController
         $bateau->setStatus($dto->statut);
         $bateau->setDescription($dto->description);
         $bateau->setOwner($this->getUser());
+
+        if ($photoUrl) {
+            $bateau->setPhotoUrl($photoUrl);
+        }
 
         if ($dto->portId) {
             $port = $this->em->getRepository(Port::class)->find($dto->portId);
@@ -94,6 +110,20 @@ class BateauController extends AbstractController
         $this->em->flush();
 
         return $this->json($this->serialiser($bateau), Response::HTTP_CREATED);
+    }
+
+    private function deserialiserDepuisFormulaire(Request $request): BateauDto
+    {
+        $dto = new BateauDto();
+        $dto->nom = (string) $request->request->get('nom', '');
+        $dto->type = (string) $request->request->get('type', '');
+        $dto->statut = (string) $request->request->get('statut', Boat::STATUS_AVAILABLE);
+        $portId = $request->request->get('portId');
+        $dto->portId = $portId !== null && $portId !== '' ? (int) $portId : null;
+        $description = $request->request->get('description');
+        $dto->description = $description !== null && $description !== '' ? (string) $description : null;
+
+        return $dto;
     }
 
     #[Route('/{id}', name: 'modifier', methods: ['PUT'])]

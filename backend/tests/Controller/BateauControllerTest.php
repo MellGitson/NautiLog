@@ -3,9 +3,20 @@
 namespace App\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class BateauControllerTest extends WebTestCase
 {
+    private function creerFichierImageTest(): UploadedFile
+    {
+        $chemin = sys_get_temp_dir().'/test-bateau-photo-'.uniqid().'.png';
+        // Un PNG 1x1 minimal valide.
+        $pngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+        file_put_contents($chemin, base64_decode($pngBase64));
+
+        return new UploadedFile($chemin, 'photo.png', 'image/png', null, true);
+    }
+
     private function creerUtilisateurEtToken(mixed $client, string $email, string $role): string
     {
         $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
@@ -113,6 +124,27 @@ class BateauControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = json_decode($client->getResponse()->getContent(), true);
         $this->assertSame('Mon Voilier', $data['nom']);
+    }
+
+    // POST /api/bateaux — création avec photo en une seule requête (multipart)
+    public function testCreerBateauAvecPhoto(): void
+    {
+        $client = static::createClient();
+        $token = $this->creerUtilisateurEtToken($client, 'owner_bateau_photo@nautilog.fr', 'ROLE_OWNER');
+
+        $client->request('POST', '/api/bateaux', [
+            'nom' => 'Voilier Illustré',
+            'type' => 'Voilier',
+            'statut' => 'DISPONIBLE',
+        ], ['photo' => $this->creerFichierImageTest()], [
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ]);
+
+        $this->assertResponseStatusCodeSame(201);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('Voilier Illustré', $data['nom']);
+        $this->assertNotNull($data['photoUrl']);
+        $this->assertStringStartsWith('/uploads/bateaux/', $data['photoUrl']);
     }
 
     // POST /api/bateaux — avec description
