@@ -51,7 +51,7 @@ class BerthControllerTest extends WebTestCase
             'ville' => 'Marseille',
             'latitude' => 43.2965,
             'longitude' => 5.3698,
-            'capacite' => 50,
+            'capacite' => 8,
         ]));
 
         return json_decode($client->getResponse()->getContent(), true)['id'];

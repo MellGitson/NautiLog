@@ -57,7 +57,6 @@ class CarnetPdfService
 
         $nom = $this->e($bateau->getName());
         $type = $this->e($bateau->getType());
-        $matricule = $this->e($bateau->getMatricule() ?? '—');
         $proprietaire = $this->e($bateau->getOwner()?->getEmail());
         $genereLe = (new \DateTimeImmutable())->format('d/m/Y à H:i');
 
@@ -84,7 +83,6 @@ class CarnetPdfService
 
     <div class="infos">
         <p><strong>Type :</strong> {$type}</p>
-        <p><strong>Matricule :</strong> {$matricule}</p>
         <p><strong>Propriétaire :</strong> {$proprietaire}</p>
     </div>
 

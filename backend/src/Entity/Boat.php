@@ -50,10 +50,6 @@ class Boat
     #[ORM\JoinColumn(nullable: true)]
     private ?Port $port = null;
 
-    #[ORM\Column(length: 50, nullable: true, unique: true)]
-    #[Assert\Length(max: 50)]
-    private ?string $matricule = null;
-
     #[ORM\Column(length: 2000, nullable: true)]
     #[Assert\Length(max: 2000)]
     private ?string $description = null;
@@ -142,18 +138,6 @@ class Boat
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
-    }
-
-    public function getMatricule(): ?string
-    {
-        return $this->matricule;
-    }
-
-    public function setMatricule(?string $matricule): static
-    {
-        $this->matricule = $matricule;
-
-        return $this;
     }
 
     public function getDescription(): ?string

@@ -4,6 +4,7 @@ import CartePort from '../components/CartePort'
 
 export default function AdminPorts() {
   const [ports, setPorts] = useState([])
+  const [demandesParPort, setDemandesParPort] = useState({})
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState(null)
 
@@ -12,6 +13,19 @@ export default function AdminPorts() {
       .then((res) => setPorts(res.data))
       .catch(() => setErreur('Impossible de charger les ports.'))
       .finally(() => setChargement(false))
+
+    api.get('/demandes-emplacements')
+      .then((res) => {
+        const comptes = {}
+        res.data
+          .filter((d) => d.statut === 'EN_ATTENTE')
+          .forEach((d) => {
+            const portId = d.emplacement.port.id
+            comptes[portId] = (comptes[portId] ?? 0) + 1
+          })
+        setDemandesParPort(comptes)
+      })
+      .catch(() => {})
   }, [])
 
   return (
@@ -27,7 +41,7 @@ export default function AdminPorts() {
       {!chargement && !erreur && (
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {ports.map((port) => (
-            <CartePort key={port.id} port={port} />
+            <CartePort key={port.id} port={port} demandesEnAttente={demandesParPort[port.id] ?? 0} />
           ))}
         </section>
       )}

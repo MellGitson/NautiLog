@@ -15,6 +15,7 @@ class Notification
     public const TYPE_SIGNALEMENT_REPONSE = 'SIGNALEMENT_REPONSE';
     public const TYPE_ADMIN_ACTIVITE = 'ADMIN_ACTIVITE';
     public const TYPE_RGPD_SUPPRESSION = 'RGPD_SUPPRESSION';
+    public const TYPE_BERTH_REQUEST_STATUT = 'EMPLACEMENT_DEMANDE_STATUT';
 
     public const TYPES = [
         self::TYPE_RESERVATION_CREEE,
@@ -22,6 +23,7 @@ class Notification
         self::TYPE_SIGNALEMENT_REPONSE,
         self::TYPE_ADMIN_ACTIVITE,
         self::TYPE_RGPD_SUPPRESSION,
+        self::TYPE_BERTH_REQUEST_STATUT,
     ];
 
     #[ORM\Id]
