@@ -5,6 +5,7 @@ import Accueil from './pages/Accueil'
 import Connexion from './pages/Connexion'
 import Inscription from './pages/Inscription'
 import ListeBateaux from './pages/ListeBateaux'
+import NouveauBateau from './pages/NouveauBateau'
 import DetailBateau from './pages/DetailBateau'
 import ListePorts from './pages/ListePorts'
 import DetailPort from './pages/DetailPort'
@@ -53,6 +54,7 @@ export default function App() {
                 <Route path="/connexion"   element={<Connexion />} />
                 <Route path="/inscription" element={<Inscription />} />
                 <Route path="/bateaux"          element={<RouteProtegee><ListeBateaux /></RouteProtegee>} />
+                <Route path="/bateaux/nouveau"  element={<RouteProtegee role="ROLE_OWNER"><NouveauBateau /></RouteProtegee>} />
                 <Route path="/bateaux/:id"      element={<RouteProtegee><DetailBateau /></RouteProtegee>} />
                 <Route path="/ports"            element={<RouteProtegee><ListePorts /></RouteProtegee>} />
                 <Route path="/ports/:id"        element={<RouteProtegee><DetailPort /></RouteProtegee>} />

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import CarteBateau from '../components/CarteBateau'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
@@ -19,8 +20,13 @@ export default function ListeBateaux() {
 
   return (
     <main>
-      <header className="mb-8">
+      <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <h1>{estProprietaire ? 'Mes bateaux' : 'Bateaux'}</h1>
+        {estProprietaire && (
+          <Link to="/bateaux/nouveau" className="btn-primary">
+            + Ajouter un bateau
+          </Link>
+        )}
       </header>
 
       {chargement && <p className="text-ocean-600">Chargement…</p>}
