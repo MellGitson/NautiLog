@@ -33,6 +33,25 @@ class BateauControllerTest extends WebTestCase
         return json_decode($client->getResponse()->getContent(), true)['token'];
     }
 
+    private function creerAdminEtToken(mixed $client): string
+    {
+        $email = 'admin_bateau_'.uniqid().'@nautilog.fr';
+        $this->creerUtilisateurEtToken($client, $email, 'ROLE_OWNER');
+
+        $container = static::getContainer();
+        $em = $container->get('doctrine')->getManager();
+        $user = $em->getRepository(\App\Entity\User::class)->findOneBy(['email' => $email]);
+        $user->setRoles(['ROLE_ADMIN']);
+        $em->flush();
+
+        $client->request('POST', '/api/auth/login', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => $email,
+            'password' => 'Password1234!',
+        ]));
+
+        return json_decode($client->getResponse()->getContent(), true)['token'];
+    }
+
     // GET /api/bateaux — sans authentification → 401
     public function testListeBateauxSansAuth(): void
     {
@@ -323,7 +342,7 @@ class BateauControllerTest extends WebTestCase
 
         $id = json_decode($client->getResponse()->getContent(), true)['id'];
 
-        $tokenAdmin = $this->creerUtilisateurEtToken($client, 'admin_reparation@nautilog.fr', 'ROLE_ADMIN');
+        $tokenAdmin = $this->creerAdminEtToken($client);
 
         $client->request('PUT', "/api/bateaux/$id", [], [], [
             'CONTENT_TYPE' => 'application/json',
@@ -337,5 +356,76 @@ class BateauControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
         $data = json_decode($client->getResponse()->getContent(), true);
         $this->assertSame('DISPONIBLE', $data['statut']);
+    }
+
+    // DELETE /api/bateaux/lot — suppression groupée en tant qu'admin
+    public function testSupprimerLotBateauxAdmin(): void
+    {
+        $client = static::createClient();
+        $tokenOwner = $this->creerUtilisateurEtToken($client, 'owner_lot_bateau@nautilog.fr', 'ROLE_OWNER');
+
+        $client->request('POST', '/api/bateaux', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenOwner",
+        ], json_encode(['nom' => 'Bateau Lot 1', 'type' => 'Voilier', 'statut' => 'DISPONIBLE']));
+        $id1 = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('POST', '/api/bateaux', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenOwner",
+        ], json_encode(['nom' => 'Bateau Lot 2', 'type' => 'Voilier', 'statut' => 'DISPONIBLE']));
+        $id2 = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $tokenAdmin = $this->creerAdminEtToken($client);
+
+        $client->request('DELETE', '/api/bateaux/lot', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenAdmin",
+        ], json_encode(['ids' => [$id1, $id2]]));
+
+        $this->assertResponseStatusCodeSame(200);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertContains($id1, $data['supprimes']);
+        $this->assertContains($id2, $data['supprimes']);
+
+        $client->request('GET', "/api/bateaux/$id1");
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    // DELETE /api/bateaux/lot — sans authentification → 401
+    public function testSupprimerLotBateauxSansAuth(): void
+    {
+        $client = static::createClient();
+        $client->request('DELETE', '/api/bateaux/lot', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['ids' => [1]]));
+
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    // DELETE /api/bateaux/lot — en tant qu'owner (non admin) → 403
+    public function testSupprimerLotBateauxOwnerRefuse(): void
+    {
+        $client = static::createClient();
+        $token = $this->creerUtilisateurEtToken($client, 'owner_lot_refuse_bateau@nautilog.fr', 'ROLE_OWNER');
+
+        $client->request('DELETE', '/api/bateaux/lot', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ], json_encode(['ids' => [1]]));
+
+        $this->assertResponseStatusCodeSame(403);
+    }
+
+    // DELETE /api/bateaux/lot — liste d'ids vide → 422
+    public function testSupprimerLotBateauxIdsVides(): void
+    {
+        $client = static::createClient();
+        $tokenAdmin = $this->creerAdminEtToken($client);
+
+        $client->request('DELETE', '/api/bateaux/lot', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenAdmin",
+        ], json_encode(['ids' => []]));
+
+        $this->assertResponseStatusCodeSame(422);
     }
 }

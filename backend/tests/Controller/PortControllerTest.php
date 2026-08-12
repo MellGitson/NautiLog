@@ -200,4 +200,154 @@ class PortControllerTest extends WebTestCase
         $client->request('GET', "/api/ports/$id");
         $this->assertResponseStatusCodeSame(404);
     }
+
+    // DELETE /api/ports/{id} — port avec un emplacement vide (aucun bateau amarré) → suppression autorisée
+    public function testSupprimerPortAvecEmplacementVide(): void
+    {
+        $client = static::createClient();
+        $token = $this->creerAdminEtToken($client);
+
+        $client->request('POST', '/api/ports', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ], json_encode([
+            'nom' => 'Port Avec Emplacement Vide',
+            'ville' => 'Nice',
+            'latitude' => 43.7009,
+            'longitude' => 7.2683,
+            'capacite' => 8,
+        ]));
+        $portId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('POST', "/api/ports/$portId/emplacements", [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ], json_encode(['label' => 'A1']));
+        $this->assertResponseStatusCodeSame(201);
+
+        $client->request('DELETE', "/api/ports/$portId", [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ]);
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $client->request('GET', "/api/ports/$portId");
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    // DELETE /api/ports/{id} — port avec bateaux rattachés → 409
+    public function testSupprimerPortAvecBateauxRattaches(): void
+    {
+        $client = static::createClient();
+        $tokenAdmin = $this->creerAdminEtToken($client);
+
+        $client->request('POST', '/api/ports', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenAdmin",
+        ], json_encode([
+            'nom' => 'Port Occupé',
+            'ville' => 'Nice',
+            'latitude' => 43.7009,
+            'longitude' => 7.2683,
+            'capacite' => 8,
+        ]));
+        $portId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $email = 'owner_port_occupe_'.uniqid().'@nautilog.fr';
+        $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => $email,
+            'password' => 'Password1234!',
+            'role' => 'ROLE_OWNER',
+        ]));
+        $client->request('POST', '/api/auth/login', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => $email,
+            'password' => 'Password1234!',
+        ]));
+        $tokenOwner = json_decode($client->getResponse()->getContent(), true)['token'];
+
+        $client->request('POST', '/api/bateaux', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $tokenOwner",
+        ], json_encode([
+            'nom' => 'Bateau du Port Occupé',
+            'type' => 'Voilier',
+            'statut' => 'DISPONIBLE',
+            'portId' => $portId,
+        ]));
+
+        $client->request('DELETE', "/api/ports/$portId", [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $tokenAdmin",
+        ]);
+
+        $this->assertResponseStatusCodeSame(409);
+    }
+
+    // DELETE /api/ports/lot — suppression groupée en tant qu'admin
+    public function testSupprimerLotPortsAdmin(): void
+    {
+        $client = static::createClient();
+        $token = $this->creerAdminEtToken($client);
+
+        $client->request('POST', '/api/ports', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ], json_encode([
+            'nom' => 'Port Lot 1', 'ville' => 'Brest', 'latitude' => 48.3904, 'longitude' => -4.4861, 'capacite' => 5,
+        ]));
+        $id1 = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('POST', '/api/ports', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ], json_encode([
+            'nom' => 'Port Lot 2', 'ville' => 'Brest', 'latitude' => 48.3904, 'longitude' => -4.4861, 'capacite' => 5,
+        ]));
+        $id2 = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('DELETE', '/api/ports/lot', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ], json_encode(['ids' => [$id1, $id2]]));
+
+        $this->assertResponseStatusCodeSame(200);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertContains($id1, $data['supprimes']);
+        $this->assertContains($id2, $data['supprimes']);
+
+        $client->request('GET', "/api/ports/$id1");
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    // DELETE /api/ports/lot — sans authentification → 401
+    public function testSupprimerLotPortsSansAuth(): void
+    {
+        $client = static::createClient();
+        $client->request('DELETE', '/api/ports/lot', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['ids' => [1]]));
+
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    // DELETE /api/ports/lot — en tant qu'owner → 403
+    public function testSupprimerLotPortsOwnerRefuse(): void
+    {
+        $client = static::createClient();
+        $email = 'owner_lot_refuse_'.uniqid().'@nautilog.fr';
+        $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => $email,
+            'password' => 'Password1234!',
+            'role' => 'ROLE_OWNER',
+        ]));
+        $client->request('POST', '/api/auth/login', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => $email,
+            'password' => 'Password1234!',
+        ]));
+        $token = json_decode($client->getResponse()->getContent(), true)['token'];
+
+        $client->request('DELETE', '/api/ports/lot', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ], json_encode(['ids' => [1]]));
+
+        $this->assertResponseStatusCodeSame(403);
+    }
 }

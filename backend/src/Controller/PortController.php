@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Dto\PortDto;
+use App\Entity\Berth;
 use App\Entity\Port;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -98,7 +99,50 @@ class PortController extends AbstractController
         return $this->json($this->serialiser($port), Response::HTTP_OK);
     }
 
-    #[Route('/{id}', name: 'supprimer', methods: ['DELETE'])]
+    #[Route('/lot', name: 'supprimer_lot', methods: ['DELETE'])]
+    public function supprimerLot(Request $request): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $donnees = json_decode($request->getContent(), true);
+        $ids = \is_array($donnees['ids'] ?? null) ? array_map('intval', $donnees['ids']) : [];
+
+        if (empty($ids)) {
+            return $this->json(['erreur' => 'Aucun identifiant fourni.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $ports = $this->em->getRepository(Port::class)->findBy(['id' => $ids]);
+        $trouves = array_map(fn (Port $p) => $p->getId(), $ports);
+        $introuvables = array_values(array_diff($ids, $trouves));
+
+        $bloques = [];
+        foreach ($ports as $port) {
+            $berthsOccupes = $this->compterBerthsOccupes($port);
+            if ($berthsOccupes > 0) {
+                $bloques[] = ['id' => $port->getId(), 'nom' => $port->getName(), 'bateaux' => $berthsOccupes];
+            }
+        }
+
+        if (!empty($bloques)) {
+            return $this->json([
+                'erreur' => 'Certains ports contiennent encore des bateaux et ne peuvent pas être supprimés.',
+                'bloques' => $bloques,
+            ], Response::HTTP_CONFLICT);
+        }
+
+        foreach ($ports as $port) {
+            $this->supprimerBerthsVides($port);
+            $this->em->remove($port);
+        }
+        $this->em->flush();
+
+        return $this->json([
+            'supprimes' => $trouves,
+            'introuvables' => $introuvables,
+        ], Response::HTTP_OK);
+    }
+
+    #[Route('/{id}', name: 'supprimer', methods: ['DELETE'], requirements: ['id' => '\d+'])]
     public function supprimer(int $id): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -109,10 +153,28 @@ class PortController extends AbstractController
             return $this->json(['erreur' => 'Port introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
+        $berthsOccupes = $this->compterBerthsOccupes($port);
+        if ($berthsOccupes > 0) {
+            return $this->json(['erreur' => \sprintf('Ce port contient encore %d bateau(x), déplacez-les avant de le supprimer.', $berthsOccupes)], Response::HTTP_CONFLICT);
+        }
+
+        $this->supprimerBerthsVides($port);
         $this->em->remove($port);
         $this->em->flush();
 
         return $this->json(['message' => 'Port supprimé avec succès.'], Response::HTTP_OK);
+    }
+
+    private function compterBerthsOccupes(Port $port): int
+    {
+        return $port->getBoats()->count();
+    }
+
+    private function supprimerBerthsVides(Port $port): void
+    {
+        foreach ($this->em->getRepository(Berth::class)->findBy(['port' => $port]) as $berth) {
+            $this->em->remove($berth);
+        }
     }
 
     private function serialiser(Port $port): array

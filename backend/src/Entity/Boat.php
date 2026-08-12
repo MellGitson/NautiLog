@@ -60,6 +60,9 @@ class Boat
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
+
     #[ORM\OneToMany(targetEntity: Repair::class, mappedBy: 'boat', orphanRemoval: true)]
     #[ORM\OrderBy(['date' => 'DESC'])]
     private Collection $repairs;
@@ -67,6 +70,7 @@ class Boat
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
         $this->repairs = new ArrayCollection();
     }
 
@@ -138,6 +142,18 @@ class Boat
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
     }
 
     public function getDescription(): ?string

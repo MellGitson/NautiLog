@@ -41,9 +41,9 @@ class BateauController extends AbstractController
             && !\in_array('ROLE_RENTER', $utilisateur->getRoles(), true);
 
         if ($estProprietaireSeul) {
-            $bateaux = $this->em->getRepository(Boat::class)->findBy(['owner' => $utilisateur]);
+            $bateaux = $this->em->getRepository(Boat::class)->findBy(['owner' => $utilisateur], ['updatedAt' => 'DESC']);
         } else {
-            $bateaux = $this->em->getRepository(Boat::class)->findAll();
+            $bateaux = $this->em->getRepository(Boat::class)->findBy([], ['updatedAt' => 'DESC']);
         }
 
         $donnees = array_map(fn (Boat $bateau) => $this->serialiser($bateau), $bateaux);
@@ -158,6 +158,7 @@ class BateauController extends AbstractController
         $bateau->setType($dto->type);
         $bateau->setStatus($dto->statut);
         $bateau->setDescription($dto->description);
+        $bateau->setUpdatedAt(new \DateTimeImmutable());
 
         if ($dto->portId) {
             $port = $this->em->getRepository(Port::class)->find($dto->portId);
@@ -172,7 +173,34 @@ class BateauController extends AbstractController
         return $this->json($this->serialiser($bateau), Response::HTTP_OK);
     }
 
-    #[Route('/{id}', name: 'supprimer', methods: ['DELETE'])]
+    #[Route('/lot', name: 'supprimer_lot', methods: ['DELETE'])]
+    public function supprimerLot(Request $request): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $donnees = json_decode($request->getContent(), true);
+        $ids = \is_array($donnees['ids'] ?? null) ? array_map('intval', $donnees['ids']) : [];
+
+        if (empty($ids)) {
+            return $this->json(['erreur' => 'Aucun identifiant fourni.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $bateaux = $this->em->getRepository(Boat::class)->findBy(['id' => $ids]);
+        $trouves = array_map(fn (Boat $b) => $b->getId(), $bateaux);
+        $introuvables = array_values(array_diff($ids, $trouves));
+
+        foreach ($bateaux as $bateau) {
+            $this->em->remove($bateau);
+        }
+        $this->em->flush();
+
+        return $this->json([
+            'supprimes' => $trouves,
+            'introuvables' => $introuvables,
+        ], Response::HTTP_OK);
+    }
+
+    #[Route('/{id}', name: 'supprimer', methods: ['DELETE'], requirements: ['id' => '\d+'])]
     public function supprimer(int $id): JsonResponse
     {
         $bateau = $this->em->getRepository(Boat::class)->find($id);
@@ -216,6 +244,7 @@ class BateauController extends AbstractController
         }
 
         $bateau->setPhotoUrl($photoUrl);
+        $bateau->setUpdatedAt(new \DateTimeImmutable());
         $this->em->flush();
 
         return $this->json($this->serialiser($bateau), Response::HTTP_OK);
@@ -261,6 +290,7 @@ class BateauController extends AbstractController
             'description' => $bateau->getDescription(),
             'photoUrl' => $bateau->getPhotoUrl(),
             'creeLe' => $bateau->getCreatedAt()?->format('Y-m-d H:i:s'),
+            'misAJourLe' => $bateau->getUpdatedAt()?->format('Y-m-d H:i:s'),
             'proprietaire' => [
                 'id' => $bateau->getOwner()?->getId(),
                 'email' => $bateau->getOwner()?->getEmail(),
