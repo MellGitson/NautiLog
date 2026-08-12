@@ -39,7 +39,7 @@ class Port
 
     #[ORM\Column]
     #[Assert\NotBlank]
-    #[Assert\Positive]
+    #[Assert\Range(min: 1, max: 10)]
     private ?int $capacity = null;
 
     #[ORM\OneToMany(targetEntity: Boat::class, mappedBy: 'port')]

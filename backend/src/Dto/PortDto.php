@@ -31,6 +31,10 @@ class PortDto
     public float $longitude = 0.0;
 
     #[Assert\NotBlank(message: 'La capacité est obligatoire.')]
-    #[Assert\Positive(message: 'La capacité doit être un entier positif.')]
+    #[Assert\Range(
+        min: 1,
+        max: 10,
+        notInRangeMessage: 'La capacité doit être comprise entre {{ min }} et {{ max }} (NautiLog ne gère qu\'une partie des emplacements du port).'
+    )]
     public int $capacite = 0;
 }
