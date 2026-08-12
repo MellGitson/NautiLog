@@ -25,4 +25,4 @@ services:
 
     App\Service\UploadService:
         arguments:
-            $uploadDir: '%kernel.project_dir%/public/uploads/bateaux'
+            $uploadDir: '%kernel.project_dir%/public/uploads'

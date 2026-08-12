@@ -21,6 +21,19 @@ class UploadService
      */
     public function uploaderPhotoBateau(UploadedFile $fichier): string
     {
+        return $this->uploaderImage($fichier, 'bateaux');
+    }
+
+    /**
+     * @throws \InvalidArgumentException si le fichier ne respecte pas les contraintes
+     */
+    public function uploaderAvatar(UploadedFile $fichier): string
+    {
+        return $this->uploaderImage($fichier, 'avatars');
+    }
+
+    private function uploaderImage(UploadedFile $fichier, string $sousDossier): string
+    {
         if (!in_array($fichier->getMimeType(), self::AUTORISES, true)) {
             throw new \InvalidArgumentException('Format de fichier non autorisé. Utilisez JPEG, PNG ou WebP.');
         }
@@ -34,11 +47,11 @@ class UploadService
         $nomFichier = $slugger->slug($nomOriginal).'-'.uniqid().'.'.$fichier->guessExtension();
 
         try {
-            $fichier->move($this->uploadDir, $nomFichier);
+            $fichier->move($this->uploadDir.'/'.$sousDossier, $nomFichier);
         } catch (FileException $e) {
             throw new \RuntimeException("Erreur lors de l'enregistrement du fichier.", 0, $e);
         }
 
-        return '/uploads/bateaux/'.$nomFichier;
+        return '/uploads/'.$sousDossier.'/'.$nomFichier;
     }
 }

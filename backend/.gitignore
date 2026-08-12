@@ -27,4 +27,6 @@
 ###> uploads ###
 /public/uploads/bateaux/*
 !/public/uploads/bateaux/.gitkeep
+/public/uploads/avatars/*
+!/public/uploads/avatars/.gitkeep
 ###< uploads ###
