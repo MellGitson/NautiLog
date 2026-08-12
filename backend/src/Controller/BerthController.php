@@ -97,14 +97,20 @@ class BerthController extends AbstractController
         $emplacement->setLatitude($dto->latitude !== null ? (string) $dto->latitude : null);
         $emplacement->setLongitude($dto->longitude !== null ? (string) $dto->longitude : null);
 
+        $bateauLibere = $emplacement->getBoat();
+
         if ($dto->bateauId) {
             $bateau = $this->em->getRepository(Boat::class)->find($dto->bateauId);
             if (!$bateau) {
                 return $this->json(['erreur' => 'Bateau introuvable.'], Response::HTTP_NOT_FOUND);
             }
             $emplacement->setBoat($bateau);
+            $bateau->setPort($emplacement->getPort());
         } else {
             $emplacement->setBoat(null);
+            if ($bateauLibere !== null && $bateauLibere->getPort() === $emplacement->getPort()) {
+                $bateauLibere->setPort(null);
+            }
         }
 
         $this->em->flush();
