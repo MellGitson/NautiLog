@@ -33,24 +33,3 @@ App\Entity\Port:
         latitude: '43.4019'
         longitude: '3.6966'
         capacity: 7
-
-    port_brest:
-        name: 'Port de Brest'
-        city: 'Brest'
-        latitude: '48.3834'
-        longitude: '-4.4949'
-        capacity: 10
-
-    port_bordeaux:
-        name: 'Port de Bordeaux'
-        city: 'Bordeaux'
-        latitude: '44.8378'
-        longitude: '-0.5792'
-        capacity: 8
-
-    port_lorient:
-        name: 'Port de Lorient'
-        city: 'Lorient'
-        latitude: '47.7485'
-        longitude: '-3.3596'
-        capacity: 6
