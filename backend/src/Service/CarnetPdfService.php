@@ -3,23 +3,23 @@
 namespace App\Service;
 
 use App\Entity\Boat;
-use App\Entity\LogEntry;
+use App\Entity\Repair;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
 class CarnetPdfService
 {
     /**
-     * @param LogEntry[] $trajets
+     * @param Repair[] $reparations
      */
-    public function genererCarnetNavigation(Boat $bateau, array $trajets): string
+    public function genererFicheBateau(Boat $bateau, array $reparations): string
     {
         $options = new Options();
         $options->set('isRemoteEnabled', false);
         $options->set('defaultFont', 'Helvetica');
 
         $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($this->genererHtml($bateau, $trajets));
+        $dompdf->loadHtml($this->genererHtml($bateau, $reparations));
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
@@ -27,37 +27,32 @@ class CarnetPdfService
     }
 
     /**
-     * @param LogEntry[] $trajets
+     * @param Repair[] $reparations
      */
-    private function genererHtml(Boat $bateau, array $trajets): string
+    private function genererHtml(Boat $bateau, array $reparations): string
     {
         $lignes = '';
-        foreach ($trajets as $trajet) {
+        foreach ($reparations as $reparation) {
             $lignes .= \sprintf(
                 '<tr>
                     <td>%s</td>
                     <td>%s</td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%s</td>
                 </tr>',
-                $this->e($trajet->getDepartureDate()?->format('d/m/Y H:i')),
-                $this->e($trajet->getArrivalDate()?->format('d/m/Y H:i') ?? 'En cours'),
-                $this->e($trajet->getDeparturePort()?->getName()),
-                $this->e($trajet->getArrivalPort()?->getName()),
-                $trajet->getDistanceNm() !== null ? number_format($trajet->getDistanceNm(), 1).' nm' : '—',
-                $this->e($trajet->getNotes() ?? '')
+                $this->e($reparation->getDate()?->format('d/m/Y')),
+                $this->e($reparation->getDescription())
             );
         }
 
         if ($lignes === '') {
-            $lignes = '<tr><td colspan="6" style="text-align:center;color:#888;">Aucun trajet enregistré.</td></tr>';
+            $lignes = '<tr><td colspan="2" style="text-align:center;color:#888;">Aucune réparation enregistrée.</td></tr>';
         }
 
         $nom = $this->e($bateau->getName());
         $type = $this->e($bateau->getType());
+        $statut = $this->e($bateau->getStatus());
         $proprietaire = $this->e($bateau->getOwner()?->getEmail());
+        $port = $this->e($bateau->getPort()?->getName());
+        $description = $this->e($bateau->getDescription() ?? '');
         $genereLe = (new \DateTimeImmutable())->format('d/m/Y à H:i');
 
         return <<<HTML
@@ -78,23 +73,23 @@ class CarnetPdfService
 </style>
 </head>
 <body>
-    <h1>Carnet de navigation — {$nom}</h1>
+    <h1>Fiche bateau — {$nom}</h1>
     <p class="sous-titre">NautiLog &amp; Fleet</p>
 
     <div class="infos">
         <p><strong>Type :</strong> {$type}</p>
+        <p><strong>Statut :</strong> {$statut}</p>
         <p><strong>Propriétaire :</strong> {$proprietaire}</p>
+        <p><strong>Port d'attache :</strong> {$port}</p>
+        <p><strong>Description :</strong> {$description}</p>
     </div>
 
+    <h2 style="font-size:14px;color:#1e6179;margin-top:20px;">Historique des réparations</h2>
     <table>
         <thead>
             <tr>
-                <th>Départ</th>
-                <th>Arrivée</th>
-                <th>Port de départ</th>
-                <th>Port d'arrivée</th>
-                <th>Distance</th>
-                <th>Notes</th>
+                <th>Date</th>
+                <th>Description</th>
             </tr>
         </thead>
         <tbody>

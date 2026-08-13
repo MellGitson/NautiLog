@@ -84,7 +84,5 @@ class AdminStatsControllerTest extends WebTestCase
         $this->assertArrayHasKey('utilisateurs', $data);
         $this->assertArrayHasKey('parRole', $data['utilisateurs']);
         $this->assertGreaterThanOrEqual(1, $data['utilisateurs']['parRole']['ROLE_ADMIN']);
-
-        $this->assertArrayHasKey('trajets', $data);
     }
 }

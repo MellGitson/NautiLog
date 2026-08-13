@@ -42,7 +42,7 @@ export default function DetailBateau() {
     const url = window.URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
     const lien = document.createElement('a')
     lien.href = url
-    lien.download = `carnet-navigation-${bateau.id}.pdf`
+    lien.download = `fiche-bateau-${bateau.id}.pdf`
     lien.click()
     window.URL.revokeObjectURL(url)
   }
@@ -126,7 +126,7 @@ export default function DetailBateau() {
 
       {peutGerer && (
         <button type="button" onClick={telechargerPdf} className="btn-ghost mt-4 !px-4 !py-1.5 text-sm">
-          📄 Télécharger le carnet de navigation (PDF)
+          📄 Télécharger la fiche bateau (PDF)
         </button>
       )}
 

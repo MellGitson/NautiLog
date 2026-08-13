@@ -9,9 +9,6 @@ import NouveauBateau from './pages/NouveauBateau'
 import DetailBateau from './pages/DetailBateau'
 import ListePorts from './pages/ListePorts'
 import DetailPort from './pages/DetailPort'
-import ListeTrajets from './pages/ListeTrajets'
-import DetailTrajet from './pages/DetailTrajet'
-import NouveauTrajet from './pages/NouveauTrajet'
 import AdminLayout from './components/AdminLayout'
 import AdminOverview from './pages/AdminOverview'
 import AdminFlotte from './pages/AdminFlotte'
@@ -58,9 +55,6 @@ export default function App() {
                 <Route path="/bateaux/:id"      element={<RouteProtegee><DetailBateau /></RouteProtegee>} />
                 <Route path="/ports"            element={<RouteProtegee><ListePorts /></RouteProtegee>} />
                 <Route path="/ports/:id"        element={<RouteProtegee><DetailPort /></RouteProtegee>} />
-                <Route path="/trajets"          element={<RouteProtegee><ListeTrajets /></RouteProtegee>} />
-                <Route path="/trajets/nouveau"  element={<RouteProtegee><NouveauTrajet /></RouteProtegee>} />
-                <Route path="/trajets/:id"      element={<RouteProtegee><DetailTrajet /></RouteProtegee>} />
                 <Route path="/reservations"     element={<RouteProtegee><MesReservations /></RouteProtegee>} />
                 <Route path="/notifications"    element={<RouteProtegee><Notifications /></RouteProtegee>} />
                 <Route path="/profil"           element={<RouteProtegee><Profil /></RouteProtegee>} />

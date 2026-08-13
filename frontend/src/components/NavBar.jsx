@@ -45,7 +45,6 @@ export default function NavBar() {
             <>
               <NavLink to="/bateaux" className={lien}>Bateaux</NavLink>
               <NavLink to="/ports" className={lien}>Ports</NavLink>
-              <NavLink to="/trajets" className={lien}>Trajets</NavLink>
               <NavLink to="/reservations" className={lien}>Réservations</NavLink>
               <NavLink
                 to="/notifications"
@@ -63,7 +62,7 @@ export default function NavBar() {
                   </span>
                 )}
               </NavLink>
-              {estAdmin && <NavLink to="/admin" className={lien}>Admin</NavLink>}
+              {estAdmin && <NavLink to="/admin" className={lien}>Tableau de bord</NavLink>}
               <Link
                 to="/profil"
                 title={estAdmin ? `${user?.email} (administrateur)` : user?.email}
@@ -105,7 +104,6 @@ export default function NavBar() {
             <>
               <NavLink to="/bateaux" className={lien} onClick={fermerMenu}>Bateaux</NavLink>
               <NavLink to="/ports" className={`${lien} py-2`} onClick={fermerMenu}>Ports</NavLink>
-              <NavLink to="/trajets" className={`${lien} py-2`} onClick={fermerMenu}>Trajets</NavLink>
               <NavLink to="/reservations" className={`${lien} py-2`} onClick={fermerMenu}>Réservations</NavLink>
               <NavLink to="/notifications" className={`${lien} py-2`} onClick={fermerMenu}>
                 Notifications {nombreNonLues > 0 && <span className="text-coral-500">({nombreNonLues})</span>}
