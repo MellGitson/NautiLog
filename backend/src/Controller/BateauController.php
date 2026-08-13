@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Dto\BateauDto;
 use App\Entity\Boat;
-use App\Entity\LogEntry;
 use App\Entity\Port;
+use App\Entity\Repair;
 use App\Security\Voter\BoatVoter;
 use App\Service\CarnetPdfService;
 use App\Service\UploadService;
@@ -265,14 +265,14 @@ class BateauController extends AbstractController
             return $this->json(['erreur' => 'Accès refusé : vous n\'êtes pas le propriétaire de ce bateau.'], Response::HTTP_FORBIDDEN);
         }
 
-        $trajets = $this->em->getRepository(LogEntry::class)->findBy(
+        $reparations = $this->em->getRepository(Repair::class)->findBy(
             ['boat' => $bateau],
-            ['departureDate' => 'DESC']
+            ['date' => 'DESC']
         );
 
-        $pdf = $this->carnetPdfService->genererCarnetNavigation($bateau, $trajets);
+        $pdf = $this->carnetPdfService->genererFicheBateau($bateau, $reparations);
 
-        $nomFichier = 'carnet-navigation-'.$bateau->getId().'.pdf';
+        $nomFichier = 'fiche-bateau-'.$bateau->getId().'.pdf';
 
         return new Response($pdf, Response::HTTP_OK, [
             'Content-Type' => 'application/pdf',

@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Entity\Berth;
 use App\Entity\Boat;
-use App\Entity\LogEntry;
 use App\Entity\Notification;
 use App\Entity\Repair;
 use App\Entity\Reservation;
@@ -87,10 +86,6 @@ class SuppressionCompteService
 
         foreach ($this->em->getRepository(Repair::class)->findBy(['boat' => $bateau]) as $reparation) {
             $this->em->remove($reparation);
-        }
-
-        foreach ($this->em->getRepository(LogEntry::class)->findBy(['boat' => $bateau]) as $trajet) {
-            $this->em->remove($trajet);
         }
 
         foreach ($this->em->getRepository(Berth::class)->findBy(['boat' => $bateau]) as $emplacement) {

@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Boat;
-use App\Entity\LogEntry;
 use App\Entity\Port;
 use App\Entity\Signalement;
 use App\Entity\User;
@@ -52,9 +51,6 @@ class AdminStatsController extends AbstractController
             'utilisateurs' => [
                 'total' => count($utilisateurs),
                 'parRole' => $compteursRoles,
-            ],
-            'trajets' => [
-                'total' => $this->em->getRepository(LogEntry::class)->count([]),
             ],
             'signalements' => [
                 'ouverts' => $this->em->getRepository(Signalement::class)->count(['status' => Signalement::STATUS_OUVERT]),

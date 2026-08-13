@@ -15,14 +15,13 @@ export default function Accueil() {
 
         <div className="relative z-10 space-y-4">
           <span className="badge bg-white/15 text-white ring-1 ring-inset ring-white/30 backdrop-blur-sm">
-            Carnet de navigation intelligent
+            Gestion de flotte intelligente
           </span>
           <h1 className="max-w-2xl text-white drop-shadow-sm">
-            Naviguez, suivez, gérez votre flotte <span className="text-coral-300">en toute confiance</span>
+            Naviguez, gérez votre flotte <span className="text-coral-300">en toute confiance</span>
           </h1>
           <p className="mx-auto max-w-xl text-lg text-ocean-100">
-            NautiLog centralise vos bateaux, vos ports d'attache et l'historique de vos trajets
-            dans une seule interface élégante et sécurisée.
+            NautiLog centralise vos bateaux, vos ports d'attache.
           </p>
         </div>
 
@@ -52,9 +51,9 @@ export default function Accueil() {
           <p className="mt-1 text-sm text-ocean-600">Retrouvez les ports d'attache et leur capacité d'accueil.</p>
         </div>
         <div className="card animate-float [animation-delay:0.8s]">
-          <div className="text-2xl">🧭</div>
-          <h2 className="mt-2 text-lg">Trajets</h2>
-          <p className="mt-1 text-sm text-ocean-600">Consignez chaque sortie et suivez votre historique de navigation.</p>
+          <div className="text-2xl">📅</div>
+          <h2 className="mt-2 text-lg">Réservations</h2>
+          <p className="mt-1 text-sm text-ocean-600">Réservez un bateau disponible ou suivez vos locations en cours.</p>
         </div>
       </div>
     </main>
