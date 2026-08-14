@@ -77,12 +77,14 @@ export default function DetailPort() {
         </dl>
       </div>
 
-      {emplacements.length > 0 && (
-        <div className="mt-6">
-          <h2 className="mb-3">Emplacements</h2>
+      <div className="mt-6">
+        <h2 className="mb-3">Emplacements</h2>
+        {emplacements.length > 0 ? (
           <CarteEmplacements port={port} emplacements={emplacements} />
-        </div>
-      )}
+        ) : (
+          <p className="text-ocean-600">Aucun emplacement pour ce port pour le moment.</p>
+        )}
+      </div>
 
       {aRole('ROLE_ADMIN') && (
         <GestionEmplacements port={port} emplacements={emplacements} onMiseAJour={chargerTout} />
