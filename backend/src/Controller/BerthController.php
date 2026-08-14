@@ -56,11 +56,13 @@ class BerthController extends AbstractController
             return $this->json($this->formaterErreurs($erreurs), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        [$latitude, $longitude] = $this->coordonnees($dto, $port);
+
         $emplacement = new Berth();
         $emplacement->setPort($port);
         $emplacement->setLabel($dto->label);
-        $emplacement->setLatitude(null !== $dto->latitude ? (string) $dto->latitude : null);
-        $emplacement->setLongitude(null !== $dto->longitude ? (string) $dto->longitude : null);
+        $emplacement->setLatitude($latitude);
+        $emplacement->setLongitude($longitude);
 
         if ($dto->bateauId) {
             $bateau = $this->em->getRepository(Boat::class)->find($dto->bateauId);
@@ -134,6 +136,27 @@ class BerthController extends AbstractController
         return $this->json(['message' => 'Emplacement supprimé avec succès.'], Response::HTTP_OK);
     }
 
+    /**
+     * @return array{0: ?string, 1: ?string}
+     */
+    private function coordonnees(BerthDto $dto, Port $port): array
+    {
+        if (null !== $dto->latitude && null !== $dto->longitude) {
+            return [(string) $dto->latitude, (string) $dto->longitude];
+        }
+
+        if (null === $port->getLatitude() || null === $port->getLongitude()) {
+            return [null, null];
+        }
+
+        $decalage = fn () => (random_int(-30, 30) / 100000);
+
+        $latitude = (float) $port->getLatitude() + $decalage();
+        $longitude = (float) $port->getLongitude() + $decalage();
+
+        return [(string) $latitude, (string) $longitude];
+    }
+
     private function serialiser(Berth $emplacement): array
     {
         return [
@@ -148,7 +171,12 @@ class BerthController extends AbstractController
             'bateau' => $emplacement->getBoat() ? [
                 'id' => $emplacement->getBoat()->getId(),
                 'nom' => $emplacement->getBoat()->getName(),
+                'type' => $emplacement->getBoat()->getType(),
                 'statut' => $emplacement->getBoat()->getStatus(),
+                'proprietaire' => [
+                    'id' => $emplacement->getBoat()->getOwner()?->getId(),
+                    'email' => $emplacement->getBoat()->getOwner()?->getEmail(),
+                ],
             ] : null,
         ];
     }

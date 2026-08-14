@@ -16,7 +16,12 @@ export default function DemandeEmplacement({ emplacements, onMiseAJour }) {
   }, [])
 
   if (libres.length === 0) {
-    return null
+    return (
+      <div className="card mt-6">
+        <h2>Demander un emplacement</h2>
+        <p className="mt-1 text-sm text-ocean-500">Aucun emplacement libre actuellement pour ce port.</p>
+      </div>
+    )
   }
 
   const soumettre = async (e) => {
