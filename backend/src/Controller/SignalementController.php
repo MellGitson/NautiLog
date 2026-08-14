@@ -48,7 +48,7 @@ class SignalementController extends AbstractController
 
         usort($signalements, static function (Signalement $a, Signalement $b) {
             if ($a->getStatus() !== $b->getStatus()) {
-                return $a->getStatus() === Signalement::STATUS_OUVERT ? -1 : 1;
+                return Signalement::STATUS_OUVERT === $a->getStatus() ? -1 : 1;
             }
 
             return $b->getCreatedAt() <=> $a->getCreatedAt();

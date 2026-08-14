@@ -59,8 +59,8 @@ class BerthController extends AbstractController
         $emplacement = new Berth();
         $emplacement->setPort($port);
         $emplacement->setLabel($dto->label);
-        $emplacement->setLatitude($dto->latitude !== null ? (string) $dto->latitude : null);
-        $emplacement->setLongitude($dto->longitude !== null ? (string) $dto->longitude : null);
+        $emplacement->setLatitude(null !== $dto->latitude ? (string) $dto->latitude : null);
+        $emplacement->setLongitude(null !== $dto->longitude ? (string) $dto->longitude : null);
 
         if ($dto->bateauId) {
             $bateau = $this->em->getRepository(Boat::class)->find($dto->bateauId);
@@ -94,8 +94,8 @@ class BerthController extends AbstractController
         }
 
         $emplacement->setLabel($dto->label);
-        $emplacement->setLatitude($dto->latitude !== null ? (string) $dto->latitude : null);
-        $emplacement->setLongitude($dto->longitude !== null ? (string) $dto->longitude : null);
+        $emplacement->setLatitude(null !== $dto->latitude ? (string) $dto->latitude : null);
+        $emplacement->setLongitude(null !== $dto->longitude ? (string) $dto->longitude : null);
 
         $bateauLibere = $emplacement->getBoat();
 
@@ -108,7 +108,7 @@ class BerthController extends AbstractController
             $bateau->setPort($emplacement->getPort());
         } else {
             $emplacement->setBoat(null);
-            if ($bateauLibere !== null && $bateauLibere->getPort() === $emplacement->getPort()) {
+            if (null !== $bateauLibere && $bateauLibere->getPort() === $emplacement->getPort()) {
                 $bateauLibere->setPort(null);
             }
         }
@@ -139,8 +139,8 @@ class BerthController extends AbstractController
         return [
             'id' => $emplacement->getId(),
             'label' => $emplacement->getLabel(),
-            'latitude' => $emplacement->getLatitude() !== null ? (float) $emplacement->getLatitude() : null,
-            'longitude' => $emplacement->getLongitude() !== null ? (float) $emplacement->getLongitude() : null,
+            'latitude' => null !== $emplacement->getLatitude() ? (float) $emplacement->getLatitude() : null,
+            'longitude' => null !== $emplacement->getLongitude() ? (float) $emplacement->getLongitude() : null,
             'port' => [
                 'id' => $emplacement->getPort()->getId(),
                 'nom' => $emplacement->getPort()->getName(),

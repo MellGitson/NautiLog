@@ -14,7 +14,7 @@ final class Version20260720145247 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return "BE-14 : ajoute matricule/description/photoUrl à boats et crée la table repairs (historique des réparations).";
+        return 'BE-14 : ajoute matricule/description/photoUrl à boats et crée la table repairs (historique des réparations).';
     }
 
     public function up(Schema $schema): void
