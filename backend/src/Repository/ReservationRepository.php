@@ -31,7 +31,7 @@ class ReservationRepository extends ServiceEntityRepository
             ->setParameter('endDate', $endDate)
             ->setMaxResults(1);
 
-        if ($excludeId !== null) {
+        if (null !== $excludeId) {
             $qb->andWhere('r.id != :excludeId')->setParameter('excludeId', $excludeId);
         }
 

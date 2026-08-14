@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import CartePort from '../components/CartePort'
 import CarteInteractive from '../components/CarteInteractive'
+import MeteoPort from '../components/MeteoPort'
 import api from '../services/api'
 
 export default function ListePorts() {
@@ -44,7 +46,26 @@ export default function ListePorts() {
       )}
 
       {!chargement && !erreur && ports.length > 0 && vue === 'carte' && (
-        <CarteInteractive ports={ports} />
+        <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
+          <CarteInteractive ports={ports} />
+
+          <aside className="card flex h-[28rem] flex-col">
+            <h2 className="mb-3 shrink-0 text-sm font-semibold text-ocean-800">Météo des ports</h2>
+            <div className="flex-1 space-y-3 overflow-y-auto pr-1">
+              {ports.map((port) => (
+                <div key={port.id} className="border-t border-ocean-100 pt-3 first:border-0 first:pt-0">
+                  <Link to={`/ports/${port.id}`} className="text-sm font-medium">
+                    {port.nom}
+                  </Link>
+                  <p className="text-xs text-ocean-500">{port.ville}</p>
+                  <div className="mt-1">
+                    <MeteoPort portId={port.id} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
       )}
 
       {!chargement && !erreur && vue === 'liste' && (

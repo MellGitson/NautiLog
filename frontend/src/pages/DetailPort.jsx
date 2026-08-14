@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import CarteEmplacements from '../components/CarteEmplacements'
 import GestionEmplacements from '../components/GestionEmplacements'
 import DemandeEmplacement from '../components/DemandeEmplacement'
+import MeteoPort from '../components/MeteoPort'
 
 export default function DetailPort() {
   const { id } = useParams()
@@ -48,6 +49,10 @@ export default function DetailPort() {
 
       <div className="card mt-4">
         <h1>{port.nom}</h1>
+
+        <div className="mt-4">
+          <MeteoPort portId={port.id} />
+        </div>
 
         <dl className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>

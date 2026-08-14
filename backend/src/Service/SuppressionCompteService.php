@@ -61,7 +61,7 @@ class SuppressionCompteService
 
         foreach ($reservations as $reservation) {
             $notifierCeLocataire = $reservation->getRenter() !== $bateau->getOwner()
-                && $reservation->getStatus() !== Reservation::STATUS_CANCELLED;
+                && Reservation::STATUS_CANCELLED !== $reservation->getStatus();
 
             if ($notifierCeLocataire) {
                 $this->notificationService->notifier(

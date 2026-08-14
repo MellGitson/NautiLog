@@ -6,6 +6,7 @@ use App\Dto\PortDto;
 use App\Entity\Berth;
 use App\Entity\BerthRequest;
 use App\Entity\Port;
+use App\Service\WeatherService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,6 +23,7 @@ class PortController extends AbstractController
         private EntityManagerInterface $em,
         private ValidatorInterface $validator,
         private SerializerInterface $serializer,
+        private WeatherService $weatherService,
     ) {
     }
 
@@ -44,6 +46,27 @@ class PortController extends AbstractController
         }
 
         return $this->json($this->serialiser($port), Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/meteo', name: 'meteo', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function meteo(int $id): JsonResponse
+    {
+        $port = $this->em->getRepository(Port::class)->find($id);
+
+        if (!$port) {
+            return $this->json(['erreur' => 'Port introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $meteo = $this->weatherService->meteoActuelle(
+            (float) $port->getLatitude(),
+            (float) $port->getLongitude(),
+        );
+
+        if (!$meteo) {
+            return $this->json(['erreur' => 'Météo indisponible.'], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        return $this->json($meteo, Response::HTTP_OK);
     }
 
     #[Route('', name: 'creer', methods: ['POST'])]

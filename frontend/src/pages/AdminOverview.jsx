@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
 import CarteInteractive from '../components/CarteInteractive'
+import MeteoPort from '../components/MeteoPort'
 
 function CarteKpi({ label, valeur, sousDetail }) {
   return (
@@ -78,6 +79,20 @@ export default function AdminOverview() {
       <section className="mt-8">
         <h2 className="mb-3 text-lg font-semibold text-ocean-800">Carte de la flotte</h2>
         {ports.length > 0 && <CarteInteractive ports={ports} />}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-3 text-lg font-semibold text-ocean-800">Météo des ports</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {ports.map((port) => (
+            <div key={port.id} className="rounded-xl border border-ocean-100 bg-white p-4">
+              <p className="text-sm font-medium text-ocean-800">{port.nom}</p>
+              <div className="mt-2">
+                <MeteoPort portId={port.id} />
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
     </main>
   )

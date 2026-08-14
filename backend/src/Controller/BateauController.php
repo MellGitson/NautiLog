@@ -119,9 +119,9 @@ class BateauController extends AbstractController
         $dto->type = (string) $request->request->get('type', '');
         $dto->statut = (string) $request->request->get('statut', Boat::STATUS_AVAILABLE);
         $portId = $request->request->get('portId');
-        $dto->portId = $portId !== null && $portId !== '' ? (int) $portId : null;
+        $dto->portId = null !== $portId && '' !== $portId ? (int) $portId : null;
         $description = $request->request->get('description');
-        $dto->description = $description !== null && $description !== '' ? (string) $description : null;
+        $dto->description = null !== $description && '' !== $description ? (string) $description : null;
 
         return $dto;
     }
@@ -147,8 +147,8 @@ class BateauController extends AbstractController
         }
 
         if (
-            $bateau->getStatus() === Boat::STATUS_REPAIR
-            && $dto->statut !== Boat::STATUS_REPAIR
+            Boat::STATUS_REPAIR === $bateau->getStatus()
+            && Boat::STATUS_REPAIR !== $dto->statut
             && !$this->isGranted('ROLE_ADMIN')
         ) {
             return $this->json(['erreur' => 'Seul un administrateur peut changer le statut d\'un bateau en réparation.'], Response::HTTP_FORBIDDEN);

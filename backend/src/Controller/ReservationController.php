@@ -76,7 +76,7 @@ class ReservationController extends AbstractController
             return $this->json(['erreur' => 'Bateau introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        if ($bateau->getStatus() === Boat::STATUS_REPAIR) {
+        if (Boat::STATUS_REPAIR === $bateau->getStatus()) {
             return $this->json(['erreur' => 'Ce bateau est en réparation et ne peut pas être réservé.'], Response::HTTP_CONFLICT);
         }
 
@@ -157,11 +157,11 @@ class ReservationController extends AbstractController
         }
 
         // Un locataire ne peut qu'annuler sa propre réservation, pas la confirmer.
-        if ($estLocataire && !$peutGererBateau && $dto->statut !== Reservation::STATUS_CANCELLED) {
+        if ($estLocataire && !$peutGererBateau && Reservation::STATUS_CANCELLED !== $dto->statut) {
             return $this->json(['erreur' => 'Vous ne pouvez qu\'annuler votre réservation.'], Response::HTTP_FORBIDDEN);
         }
 
-        if ($dto->statut === Reservation::STATUS_CONFIRMED) {
+        if (Reservation::STATUS_CONFIRMED === $dto->statut) {
             $chevauchement = $this->em->getRepository(Reservation::class)
                 ->trouverChevauchement($reservation->getBoat(), $reservation->getStartDate(), $reservation->getEndDate(), $reservation->getId());
             if ($chevauchement) {

@@ -43,7 +43,7 @@ class CarnetPdfService
             );
         }
 
-        if ($lignes === '') {
+        if ('' === $lignes) {
             $lignes = '<tr><td colspan="2" style="text-align:center;color:#888;">Aucune réparation enregistrée.</td></tr>';
         }
 

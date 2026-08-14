@@ -70,7 +70,7 @@ class BerthRequestController extends AbstractController
             return $this->json(['erreur' => 'Emplacement introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        if ($emplacement->getBoat() !== null) {
+        if (null !== $emplacement->getBoat()) {
             return $this->json(['erreur' => 'Cet emplacement est déjà occupé.'], Response::HTTP_CONFLICT);
         }
 
@@ -123,7 +123,7 @@ class BerthRequestController extends AbstractController
             return $this->json(['erreur' => 'Demande introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        if ($demande->getStatus() !== BerthRequest::STATUS_PENDING) {
+        if (BerthRequest::STATUS_PENDING !== $demande->getStatus()) {
             return $this->json(['erreur' => 'Cette demande a déjà été traitée.'], Response::HTTP_CONFLICT);
         }
 
@@ -134,8 +134,8 @@ class BerthRequestController extends AbstractController
             return $this->json($this->formaterErreurs($erreurs), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        if ($dto->statut === BerthRequest::STATUS_APPROVED) {
-            if ($demande->getBerth()->getBoat() !== null) {
+        if (BerthRequest::STATUS_APPROVED === $dto->statut) {
+            if (null !== $demande->getBerth()->getBoat()) {
                 return $this->json(['erreur' => 'Cet emplacement est déjà occupé.'], Response::HTTP_CONFLICT);
             }
             $demande->getBerth()->setBoat($demande->getBoat());
@@ -144,7 +144,7 @@ class BerthRequestController extends AbstractController
 
         $demande->setStatus($dto->statut);
 
-        $message = $dto->statut === BerthRequest::STATUS_APPROVED
+        $message = BerthRequest::STATUS_APPROVED === $dto->statut
             ? \sprintf('Votre demande d\'emplacement "%s" pour "%s" a été approuvée.', $demande->getBerth()->getLabel(), $demande->getBoat()->getName())
             : \sprintf('Votre demande d\'emplacement "%s" pour "%s" a été refusée.', $demande->getBerth()->getLabel(), $demande->getBoat()->getName());
 
