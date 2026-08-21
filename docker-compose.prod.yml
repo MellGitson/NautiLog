@@ -27,6 +27,8 @@ services:
       APP_SECRET: ${APP_SECRET}
       APP_ENCRYPT_KEY: ${APP_ENCRYPT_KEY}
       JWT_PASSPHRASE: ${JWT_PASSPHRASE}
+      CORS_ALLOW_ORIGIN: '^https://(www\.)?nautilog\.fr$$'
+      DEFAULT_URI: https://nautilog.fr
     depends_on:
       - db
     healthcheck:
