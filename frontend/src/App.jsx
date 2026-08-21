@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import RouteProtegee from './components/RouteProtegee'
 import NavBar from './components/NavBar'
+import Footer from './components/Footer'
 import Accueil from './pages/Accueil'
 import Connexion from './pages/Connexion'
 import Inscription from './pages/Inscription'
@@ -19,6 +20,7 @@ import AdminSignalements from './pages/AdminSignalements'
 import Profil from './pages/Profil'
 import MesReservations from './pages/MesReservations'
 import Notifications from './pages/Notifications'
+import MentionsLegales from './pages/MentionsLegales'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -45,21 +47,25 @@ export default function App() {
         <Route
           path="*"
           element={
-            <div id="contenu-principal" className="mx-auto max-w-5xl px-6 py-10">
-              <Routes>
-                <Route path="/"            element={<Accueil />} />
-                <Route path="/connexion"   element={<Connexion />} />
-                <Route path="/inscription" element={<Inscription />} />
-                <Route path="/bateaux"          element={<RouteProtegee><ListeBateaux /></RouteProtegee>} />
-                <Route path="/bateaux/nouveau"  element={<RouteProtegee role="ROLE_OWNER"><NouveauBateau /></RouteProtegee>} />
-                <Route path="/bateaux/:id"      element={<RouteProtegee><DetailBateau /></RouteProtegee>} />
-                <Route path="/ports"            element={<RouteProtegee><ListePorts /></RouteProtegee>} />
-                <Route path="/ports/:id"        element={<RouteProtegee><DetailPort /></RouteProtegee>} />
-                <Route path="/reservations"     element={<RouteProtegee><MesReservations /></RouteProtegee>} />
-                <Route path="/notifications"    element={<RouteProtegee><Notifications /></RouteProtegee>} />
-                <Route path="/profil"           element={<RouteProtegee><Profil /></RouteProtegee>} />
-                <Route path="*"                 element={<NotFound />} />
-              </Routes>
+            <div className="flex min-h-[calc(100vh-73px)] flex-col">
+              <div id="contenu-principal" className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+                <Routes>
+                  <Route path="/"            element={<Accueil />} />
+                  <Route path="/connexion"   element={<Connexion />} />
+                  <Route path="/inscription" element={<Inscription />} />
+                  <Route path="/bateaux"          element={<RouteProtegee><ListeBateaux /></RouteProtegee>} />
+                  <Route path="/bateaux/nouveau"  element={<RouteProtegee role="ROLE_OWNER"><NouveauBateau /></RouteProtegee>} />
+                  <Route path="/bateaux/:id"      element={<RouteProtegee><DetailBateau /></RouteProtegee>} />
+                  <Route path="/ports"            element={<RouteProtegee><ListePorts /></RouteProtegee>} />
+                  <Route path="/ports/:id"        element={<RouteProtegee><DetailPort /></RouteProtegee>} />
+                  <Route path="/reservations"     element={<RouteProtegee><MesReservations /></RouteProtegee>} />
+                  <Route path="/notifications"    element={<RouteProtegee><Notifications /></RouteProtegee>} />
+                  <Route path="/profil"           element={<RouteProtegee><Profil /></RouteProtegee>} />
+                  <Route path="/mentions-legales" element={<MentionsLegales />} />
+                  <Route path="*"                 element={<NotFound />} />
+                </Routes>
+              </div>
+              <Footer />
             </div>
           }
         />
