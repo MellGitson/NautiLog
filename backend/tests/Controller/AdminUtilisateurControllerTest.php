@@ -217,4 +217,73 @@ class AdminUtilisateurControllerTest extends WebTestCase
 
         $this->assertResponseStatusCodeSame(422);
     }
+
+    // DELETE /api/admin/users/{id} — non admin → 403
+    public function testSupprimerNonAdmin(): void
+    {
+        $client = static::createClient();
+        $token = $this->creerUtilisateurEtToken($client, 'suppr_non_admin@nautilog.fr', 'ROLE_RENTER');
+
+        $client->request('DELETE', '/api/admin/users/1', [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $token",
+        ]);
+
+        $this->assertResponseStatusCodeSame(403);
+    }
+
+    // DELETE /api/admin/users/{id} — admin supprime un autre utilisateur
+    public function testSupprimerUtilisateur(): void
+    {
+        $client = static::createClient();
+        $adminToken = $this->creerAdminEtToken($client);
+
+        $client->request('POST', '/api/auth/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'email' => 'cible_suppression@nautilog.fr',
+            'password' => 'Password1234!',
+            'role' => 'ROLE_RENTER',
+        ]));
+        $cibleId = json_decode($client->getResponse()->getContent(), true)['user']['id'];
+
+        $client->request('DELETE', "/api/admin/users/$cibleId", [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $adminToken",
+        ]);
+
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', "/api/admin/users/$cibleId", [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $adminToken",
+        ]);
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    // DELETE /api/admin/users/{id} — utilisateur inexistant → 404
+    public function testSupprimerUtilisateurInexistant(): void
+    {
+        $client = static::createClient();
+        $adminToken = $this->creerAdminEtToken($client);
+
+        $client->request('DELETE', '/api/admin/users/999999', [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $adminToken",
+        ]);
+
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    // DELETE /api/admin/users/{id} — un admin ne peut pas se supprimer lui-même via cette route
+    public function testAdminNePeutPasSeSupprimerLuiMeme(): void
+    {
+        $client = static::createClient();
+        $adminToken = $this->creerAdminEtToken($client);
+
+        $client->request('GET', '/api/me', [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $adminToken",
+        ]);
+        $adminId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('DELETE', "/api/admin/users/$adminId", [], [], [
+            'HTTP_AUTHORIZATION' => "Bearer $adminToken",
+        ]);
+
+        $this->assertResponseStatusCodeSame(403);
+    }
 }

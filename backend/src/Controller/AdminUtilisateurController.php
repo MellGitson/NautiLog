@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Dto\AdminUtilisateurDto;
 use App\Dto\UtilisateurRoleDto;
 use App\Entity\User;
+use App\Service\SuppressionCompteService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,6 +22,7 @@ class AdminUtilisateurController extends AbstractController
         private EntityManagerInterface $em,
         private ValidatorInterface $validator,
         private SerializerInterface $serializer,
+        private SuppressionCompteService $suppressionCompteService,
     ) {
     }
 
@@ -108,6 +110,24 @@ class AdminUtilisateurController extends AbstractController
         $this->em->flush();
 
         return $this->json($this->serialiser($utilisateur), Response::HTTP_OK);
+    }
+
+    #[Route('/{id}', name: 'supprimer', methods: ['DELETE'])]
+    public function supprimer(int $id): JsonResponse
+    {
+        $utilisateur = $this->em->getRepository(User::class)->find($id);
+
+        if (!$utilisateur) {
+            return $this->json(['erreur' => 'Utilisateur introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($utilisateur === $this->getUser()) {
+            return $this->json(['erreur' => 'Utilisez la suppression de votre propre compte via votre profil.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $this->suppressionCompteService->supprimerCompte($utilisateur);
+
+        return $this->json(['message' => 'Le compte et toutes les données associées ont été supprimés.'], Response::HTTP_OK);
     }
 
     private function serialiser(User $utilisateur): array

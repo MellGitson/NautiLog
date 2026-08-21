@@ -1,5 +1,6 @@
 import { Fragment, useState } from 'react'
 import api from '../services/api'
+import ModalConfirmationSuppression from './ModalConfirmationSuppression'
 
 const ROLES = ['ROLE_RENTER', 'ROLE_OWNER', 'ROLE_ADMIN']
 
@@ -34,6 +35,8 @@ export default function GestionUtilisateurs({ utilisateurs, onMiseAJour }) {
   const [editionRoleId, setEditionRoleId] = useState(null)
   const [editionProfilId, setEditionProfilId] = useState(null)
   const [valeurs, setValeurs] = useState({})
+  const [utilisateurASupprimer, setUtilisateurASupprimer] = useState(null)
+  const [erreurSuppression, setErreurSuppression] = useState(null)
 
   const changerRole = async (utilisateur, nouveauRole) => {
     if (nouveauRole === roleActuel(utilisateur.roles)) {
@@ -74,6 +77,20 @@ export default function GestionUtilisateurs({ utilisateurs, onMiseAJour }) {
       onMiseAJour()
     } catch (err) {
       setErreur(err.response?.data?.errors?.email || "Impossible de mettre à jour cet utilisateur.")
+    } finally {
+      setEnCours(null)
+    }
+  }
+
+  const confirmerSuppression = async () => {
+    setErreurSuppression(null)
+    setEnCours(utilisateurASupprimer.id)
+    try {
+      await api.delete(`/admin/users/${utilisateurASupprimer.id}`)
+      setUtilisateurASupprimer(null)
+      onMiseAJour()
+    } catch (err) {
+      setErreurSuppression(err.response?.data?.erreur || "Impossible de supprimer cet utilisateur.")
     } finally {
       setEnCours(null)
     }
@@ -150,6 +167,14 @@ export default function GestionUtilisateurs({ utilisateurs, onMiseAJour }) {
                             Modifier
                           </button>
                         )}
+                        <button
+                          type="button"
+                          onClick={() => setUtilisateurASupprimer(u)}
+                          disabled={enCours === u.id}
+                          className="text-sm font-medium text-coral-600 hover:text-coral-700"
+                        >
+                          Supprimer
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -201,6 +226,17 @@ export default function GestionUtilisateurs({ utilisateurs, onMiseAJour }) {
           </tbody>
         </table>
       </div>
+
+      {utilisateurASupprimer && (
+        <ModalConfirmationSuppression
+          titre="Supprimer cet utilisateur ?"
+          elements={[{ id: utilisateurASupprimer.id, label: utilisateurASupprimer.email }]}
+          enCours={enCours === utilisateurASupprimer.id}
+          erreur={erreurSuppression}
+          onConfirmer={confirmerSuppression}
+          onAnnuler={() => setUtilisateurASupprimer(null)}
+        />
+      )}
     </div>
   )
 }
