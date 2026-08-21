@@ -21,6 +21,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./backend/public/uploads:/var/www/api/public/uploads
+      - jwt_keys:/var/www/api/config/jwt
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       APP_ENV: prod
@@ -86,6 +87,7 @@ services:
 
 volumes:
   db_data:
+  jwt_keys:
 
 networks:
   nautilog_network:
