@@ -45,29 +45,37 @@ export default function AdminFlotte() {
 
   return (
     <main>
-      <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
+      <header className="mb-8 flex flex-wrap items-center justify-between gap-6 border-b border-ocean-100 pb-6">
         <div>
           <h1>Flotte</h1>
           <p className="mt-2 text-ocean-600">
-            {bateaux.length} bateau(x) au total.
-            {selectionnes.length === 0 && ' Cliquez sur un bateau pour gérer son statut, ses photos et son historique.'}
-            {selectionnes.length > 0 && ` ${selectionnes.length} sélectionné(s).`}
+            {selectionnes.length === 0
+              ? 'Cliquez sur un bateau pour gérer son statut, ses photos et son historique.'
+              : `${selectionnes.length} sélectionné(s).`}
           </p>
         </div>
-        {selectionnes.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setConfirmationOuverte(true)}
-            className="btn-primary !bg-coral-600 hover:!bg-coral-700 inline-flex items-center gap-2"
-            aria-label={`Supprimer ${selectionnes.length} bateau(x) sélectionné(s)`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-              <polyline points="3 6 5 6 21 6" />
-              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-            </svg>
-            Supprimer ({selectionnes.length})
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {selectionnes.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setConfirmationOuverte(true)}
+              className="btn-primary !bg-coral-600 hover:!bg-coral-700 inline-flex items-center gap-2"
+              aria-label={`Supprimer ${selectionnes.length} bateau(x) sélectionné(s)`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+              Supprimer ({selectionnes.length})
+            </button>
+          )}
+          <div className="flex shrink-0 flex-col items-center rounded-2xl bg-ocean-900 px-6 py-3 text-white">
+            <span className="font-display text-3xl leading-none">{bateaux.length}</span>
+            <span className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-ocean-300">
+              Bateau{bateaux.length > 1 ? 'x' : ''}
+            </span>
+          </div>
+        </div>
       </header>
 
       {chargement && <p className="text-ocean-600">Chargement…</p>}

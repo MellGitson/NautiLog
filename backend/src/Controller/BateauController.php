@@ -6,6 +6,7 @@ use App\Dto\BateauDto;
 use App\Entity\Boat;
 use App\Entity\Port;
 use App\Entity\Repair;
+use App\Entity\User;
 use App\Security\Voter\BoatVoter;
 use App\Service\CarnetPdfService;
 use App\Service\UploadService;
@@ -66,15 +67,31 @@ class BateauController extends AbstractController
     #[Route('', name: 'creer', methods: ['POST'])]
     public function creer(Request $request): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_OWNER');
+        if (!$this->isGranted('ROLE_OWNER') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException();
+        }
 
-        $dto = $request->files->count() > 0
+        $dto = str_contains((string) $request->headers->get('Content-Type'), 'multipart/form-data')
             ? $this->deserialiserDepuisFormulaire($request)
             : $this->serializer->deserialize($request->getContent(), BateauDto::class, 'json');
 
         $erreurs = $this->validator->validate($dto);
         if (count($erreurs) > 0) {
             return $this->json($this->formaterErreurs($erreurs), Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $proprietaire = $this->getUser();
+        if (null !== $dto->proprietaireId) {
+            if (!$this->isGranted('ROLE_ADMIN')) {
+                return $this->json(['erreur' => 'Seul un administrateur peut créer un bateau pour un autre utilisateur.'], Response::HTTP_FORBIDDEN);
+            }
+
+            $proprietaire = $this->em->getRepository(User::class)->find($dto->proprietaireId);
+            if (!$proprietaire || !\in_array('ROLE_OWNER', $proprietaire->getRoles(), true)) {
+                return $this->json(['erreur' => 'Propriétaire introuvable.'], Response::HTTP_NOT_FOUND);
+            }
+        } elseif (!$this->isGranted('ROLE_OWNER')) {
+            return $this->json(['erreur' => 'Veuillez sélectionner un propriétaire pour ce bateau.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $photo = $request->files->get('photo');
@@ -92,7 +109,7 @@ class BateauController extends AbstractController
         $bateau->setType($dto->type);
         $bateau->setStatus($dto->statut);
         $bateau->setDescription($dto->description);
-        $bateau->setOwner($this->getUser());
+        $bateau->setOwner($proprietaire);
 
         if ($photoUrl) {
             $bateau->setPhotoUrl($photoUrl);
@@ -122,6 +139,8 @@ class BateauController extends AbstractController
         $dto->portId = null !== $portId && '' !== $portId ? (int) $portId : null;
         $description = $request->request->get('description');
         $dto->description = null !== $description && '' !== $description ? (string) $description : null;
+        $proprietaireId = $request->request->get('proprietaireId');
+        $dto->proprietaireId = null !== $proprietaireId && '' !== $proprietaireId ? (int) $proprietaireId : null;
 
         return $dto;
     }

@@ -18,9 +18,15 @@ export default function AdminUtilisateurs() {
 
   return (
     <main>
-      <header className="mb-8">
-        <h1>Utilisateurs</h1>
-        <p className="mt-2 text-ocean-600">{utilisateurs.length} utilisateur(s) inscrit(s).</p>
+      <header className="mb-8 flex items-center justify-between gap-6 border-b border-ocean-100 pb-6">
+        <div>
+          <h1>Utilisateurs</h1>
+          <p className="mt-2 text-ocean-600">Rôles, profils et suppression de compte.</p>
+        </div>
+        <div className="flex shrink-0 flex-col items-center rounded-2xl bg-ocean-900 px-6 py-3 text-white">
+          <span className="font-display text-3xl leading-none">{utilisateurs.length}</span>
+          <span className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-ocean-300">Comptes</span>
+        </div>
       </header>
 
       {chargement && <p className="text-ocean-600">Chargement…</p>}

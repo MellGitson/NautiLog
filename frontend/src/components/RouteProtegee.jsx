@@ -8,7 +8,8 @@ export default function RouteProtegee({ children, role }) {
     return <Navigate to="/connexion" replace />
   }
 
-  if (role && !aRole(role)) {
+  const rolesRequis = Array.isArray(role) ? role : (role ? [role] : [])
+  if (rolesRequis.length > 0 && !rolesRequis.some(aRole)) {
     return <Navigate to="/" replace />
   }
 

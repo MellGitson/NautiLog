@@ -37,7 +37,7 @@ function IconeVague() {
   )
 }
 
-export default function MeteoPort({ portId }) {
+export default function MeteoPort({ portId, sombre = false }) {
   const [meteo, setMeteo] = useState(null)
   const [erreur, setErreur] = useState(false)
 
@@ -49,12 +49,14 @@ export default function MeteoPort({ portId }) {
     return () => { annule = true }
   }, [portId])
 
-  if (erreur) return <p className="text-xs text-ocean-400">Météo indisponible</p>
-  if (!meteo) return <p className="text-xs text-ocean-400">Météo…</p>
+  const texteAtténué = sombre ? 'text-ocean-300' : 'text-ocean-400'
+
+  if (erreur) return <p className={`text-xs ${texteAtténué}`}>Météo indisponible</p>
+  if (!meteo) return <p className={`text-xs ${texteAtténué}`}>Météo…</p>
 
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ocean-700">
-      <span className="flex items-center gap-1 font-semibold text-ocean-900">
+    <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-sm ${sombre ? 'text-ocean-100' : 'text-ocean-700'}`}>
+      <span className={`flex items-center gap-1 font-semibold ${sombre ? 'text-white' : 'text-ocean-900'}`}>
         <IconeTemperature />
         {Math.round(meteo.temperature)}°C
       </span>
@@ -62,7 +64,7 @@ export default function MeteoPort({ portId }) {
         <IconeVent direction={meteo.directionVent} />
         {Math.round(meteo.vitesseVent)} km/h
       </span>
-      <span className="badge flex items-center gap-1 bg-ocean-100 text-ocean-700">
+      <span className={`badge flex items-center gap-1 ${sombre ? 'bg-white/15 text-white ring-1 ring-inset ring-white/25' : 'bg-ocean-100 text-ocean-700'}`}>
         <IconeVague />
         mer {meteo.etatMer}
       </span>

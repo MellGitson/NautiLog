@@ -71,6 +71,18 @@ class ReservationController extends AbstractController
             return $this->json($this->formaterErreurs($erreurs), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        $locataire = $user;
+        if (null !== $dto->locataireId) {
+            if (!$this->isGranted('ROLE_ADMIN')) {
+                return $this->json(['erreur' => 'Seul un administrateur peut créer une réservation pour un autre utilisateur.'], Response::HTTP_FORBIDDEN);
+            }
+
+            $locataire = $this->em->getRepository(User::class)->find($dto->locataireId);
+            if (!$locataire) {
+                return $this->json(['erreur' => 'Locataire introuvable.'], Response::HTTP_NOT_FOUND);
+            }
+        }
+
         $bateau = $this->em->getRepository(Boat::class)->find($dto->bateauId);
         if (!$bateau) {
             return $this->json(['erreur' => 'Bateau introuvable.'], Response::HTTP_NOT_FOUND);
@@ -99,20 +111,20 @@ class ReservationController extends AbstractController
 
         $reservation = new Reservation();
         $reservation->setBoat($bateau);
-        $reservation->setRenter($user);
+        $reservation->setRenter($locataire);
         $reservation->setStartDate($dateDebut);
         $reservation->setEndDate($dateFin);
 
         $this->em->persist($reservation);
 
         $proprietaire = $bateau->getOwner();
-        if ($proprietaire !== $user) {
+        if ($proprietaire !== $locataire) {
             $this->notificationService->notifier(
                 $proprietaire,
                 Notification::TYPE_RESERVATION_CREEE,
                 \sprintf(
                     '%s a réservé votre bateau "%s" du %s au %s.',
-                    $user->getEmail(),
+                    $locataire->getEmail(),
                     $bateau->getName(),
                     $dateDebut->format('d/m/Y'),
                     $dateFin->format('d/m/Y')

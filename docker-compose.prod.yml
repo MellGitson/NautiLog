@@ -32,6 +32,7 @@ services:
       CORS_ALLOW_ORIGIN: '^https://(www\.)?nautilog\.fr$$'
       DEFAULT_URI: https://nautilog.fr
       MAILER_DSN: ${MAILER_DSN:-null://null}
+      CONTACT_DESTINATAIRE: ${CONTACT_DESTINATAIRE:-contact@nautilog.fr}
     depends_on:
       - db
     healthcheck:

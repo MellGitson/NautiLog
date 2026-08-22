@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom'
 
 export default function CartePort({ port, demandesEnAttente = 0, selection }) {
+  const tauxOccupation = port.capacite > 0 ? Math.round((port.bateaux / port.capacite) * 100) : 0
+
   return (
-    <article className={`relative card flex flex-col gap-3 ${selection?.checked ? 'ring-2 ring-coral-500' : ''}`}>
+    <article className={`relief-eau-sombre relative flex flex-col overflow-hidden rounded-2xl bg-gradient-to-br from-ocean-950 via-ocean-900 to-ocean-700 text-white transition-transform hover:-translate-y-1 ${selection?.checked ? 'ring-2 ring-coral-400' : ''}`}>
       {selection && (
-        <label className="absolute right-4 top-4 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-white/90 shadow-sm">
+        <label className="absolute right-4 top-4 z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-white/90 shadow-sm">
           <span className="sr-only">Sélectionner {port.nom}</span>
           <input
             type="checkbox"
@@ -14,20 +16,29 @@ export default function CartePort({ port, demandesEnAttente = 0, selection }) {
           />
         </label>
       )}
-      <div className="flex flex-wrap items-center gap-2">
-        <h2>{port.nom}</h2>
+
+      <div className="p-6">
+        <span className="text-xs font-semibold uppercase tracking-wide text-ocean-300">{port.ville}</span>
+        <h2 className="mt-1 text-white">{port.nom}</h2>
         {demandesEnAttente > 0 && (
-          <span className="badge bg-coral-500 text-white">
+          <span className="badge mt-2 bg-coral-500 text-white">
             {demandesEnAttente} demande{demandesEnAttente > 1 ? 's' : ''} en attente
           </span>
         )}
       </div>
-      <p className="text-sm text-ocean-600">Ville : {port.ville}</p>
-      <p className="text-sm text-ocean-600">Capacité : {port.capacite} bateaux</p>
-      <p className="text-sm text-ocean-600">Bateaux amarrés : {port.bateaux}</p>
-      <Link to={`/ports/${port.id}`} className="mt-2 text-sm font-medium">
-        Voir le détail →
-      </Link>
+
+      <div className="mt-auto border-t border-ocean-700 px-6 py-4">
+        <div className="flex items-center justify-between text-xs text-ocean-300">
+          <span>{port.bateaux} / {port.capacite} bateaux</span>
+          <span>{tauxOccupation}%</span>
+        </div>
+        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+          <div className="h-full rounded-full bg-coral-500" style={{ width: `${Math.min(tauxOccupation, 100)}%` }} />
+        </div>
+        <Link to={`/ports/${port.id}`} className="mt-4 inline-flex text-sm font-medium text-white hover:text-coral-300">
+          Voir le détail →
+        </Link>
+      </div>
     </article>
   )
 }

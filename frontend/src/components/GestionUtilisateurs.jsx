@@ -10,10 +10,41 @@ const LABELS_ROLES = {
   ROLE_ADMIN: 'Administrateur',
 }
 
-const BADGES_ROLES = {
-  ROLE_RENTER: 'badge bg-amber-100 text-amber-700',
-  ROLE_OWNER: 'badge bg-ocean-600 text-white',
-  ROLE_ADMIN: 'badge bg-coral-500 text-white',
+const POINT_ROLES = {
+  ROLE_RENTER: 'bg-amber-500',
+  ROLE_OWNER: 'bg-ocean-500',
+  ROLE_ADMIN: 'bg-coral-500',
+}
+
+function IconeCrayon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  )
+}
+
+function IconeCle() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+      <circle cx="7.5" cy="15.5" r="5.5" />
+      <path d="m21 2-9.6 9.6" />
+      <path d="m15.5 7.5 3 3L22 7l-3-3" />
+    </svg>
+  )
+}
+
+function IconeCorbeille() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </svg>
+  )
 }
 
 function roleActuel(roles) {
@@ -120,10 +151,17 @@ export default function GestionUtilisateurs({ utilisateurs, onMiseAJour }) {
                 <Fragment key={u.id}>
                   <tr className="align-middle">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-ocean-900">{u.email}</div>
-                      {(u.firstName || u.lastName) && (
-                        <div className="text-xs text-ocean-500">{u.firstName} {u.lastName}</div>
-                      )}
+                      <div className="flex items-center gap-3">
+                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${role === 'ROLE_ADMIN' ? 'bg-coral-500' : 'bg-ocean-500'}`}>
+                          {u.email.charAt(0).toUpperCase()}
+                        </span>
+                        <div>
+                          <div className="font-medium text-ocean-900">{u.email}</div>
+                          {(u.firstName || u.lastName) && (
+                            <div className="text-xs text-ocean-500">{u.firstName} {u.lastName}</div>
+                          )}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-ocean-700">{u.nombreBateaux}</td>
                     <td className="px-4 py-3">
@@ -142,19 +180,24 @@ export default function GestionUtilisateurs({ utilisateurs, onMiseAJour }) {
                           ))}
                         </select>
                       ) : (
-                        <span className={BADGES_ROLES[role]}>{LABELS_ROLES[role]}</span>
+                        <span className="inline-flex items-center gap-2 text-sm font-medium text-ocean-800">
+                          <span className={`h-1.5 w-1.5 rounded-full ${POINT_ROLES[role]}`} aria-hidden="true" />
+                          {LABELS_ROLES[role]}
+                        </span>
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-3">
+                      <div className="flex items-center gap-1">
                         {!enEditionRole && (
                           <button
                             type="button"
                             onClick={() => setEditionRoleId(u.id)}
                             disabled={enCours === u.id}
-                            className="text-sm font-medium text-ocean-600 hover:text-coral-500"
+                            title={`Changer le rôle de ${u.email}`}
+                            aria-label={`Changer le rôle de ${u.email}`}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-ocean-500 transition-colors hover:bg-ocean-50 hover:text-ocean-700 disabled:opacity-40"
                           >
-                            Rôle
+                            <IconeCle />
                           </button>
                         )}
                         {!enEditionProfil && (
@@ -162,18 +205,22 @@ export default function GestionUtilisateurs({ utilisateurs, onMiseAJour }) {
                             type="button"
                             onClick={() => ouvrirEditionProfil(u)}
                             disabled={enCours === u.id}
-                            className="text-sm font-medium text-ocean-600 hover:text-coral-500"
+                            title={`Modifier ${u.email}`}
+                            aria-label={`Modifier ${u.email}`}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-ocean-500 transition-colors hover:bg-ocean-50 hover:text-ocean-700 disabled:opacity-40"
                           >
-                            Modifier
+                            <IconeCrayon />
                           </button>
                         )}
                         <button
                           type="button"
                           onClick={() => setUtilisateurASupprimer(u)}
                           disabled={enCours === u.id}
-                          className="text-sm font-medium text-coral-600 hover:text-coral-700"
+                          title={`Supprimer ${u.email}`}
+                          aria-label={`Supprimer ${u.email}`}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-coral-400 transition-colors hover:bg-coral-50 hover:text-coral-600 disabled:opacity-40"
                         >
-                          Supprimer
+                          <IconeCorbeille />
                         </button>
                       </div>
                     </td>

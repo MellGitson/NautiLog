@@ -6,6 +6,7 @@ import CarteEmplacements from '../components/CarteEmplacements'
 import GestionEmplacements from '../components/GestionEmplacements'
 import DemandeEmplacement from '../components/DemandeEmplacement'
 import MeteoPort from '../components/MeteoPort'
+import IllustrationMeteo from '../components/IllustrationMeteo'
 
 export default function DetailPort() {
   const { id } = useParams()
@@ -47,32 +48,30 @@ export default function DetailPort() {
     <main className="mx-auto max-w-2xl">
       <Link to="/ports" className="text-sm font-medium">← Retour à la liste</Link>
 
-      <div className="card mt-4">
-        <h1>{port.nom}</h1>
-
-        <div className="mt-4">
-          <MeteoPort portId={port.id} />
+      <div className="mt-4 overflow-hidden rounded-2xl bg-gradient-to-br from-ocean-950 via-ocean-900 to-ocean-700 text-white">
+        <div className="flex items-center justify-between gap-4 p-8">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wide text-ocean-300">{port.ville}</span>
+            <h1 className="mt-1 text-white">{port.nom}</h1>
+            <div className="mt-6">
+              <MeteoPort portId={port.id} sombre />
+            </div>
+          </div>
+          <IllustrationMeteo />
         </div>
 
-        <dl className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <dt className="text-sm font-medium text-ocean-500">Ville</dt>
-            <dd className="text-ocean-900">{port.ville}</dd>
+        <dl className="grid grid-cols-3 divide-x divide-ocean-700 border-t border-ocean-700 text-center">
+          <div className="px-4 py-4">
+            <dt className="text-xs font-medium uppercase tracking-wide text-ocean-300">Capacité</dt>
+            <dd className="mt-1 font-display text-2xl text-white">{port.capacite}</dd>
           </div>
-
-          <div>
-            <dt className="text-sm font-medium text-ocean-500">Capacité</dt>
-            <dd className="text-ocean-900">{port.capacite} bateaux</dd>
+          <div className="px-4 py-4">
+            <dt className="text-xs font-medium uppercase tracking-wide text-ocean-300">Amarrés</dt>
+            <dd className="mt-1 font-display text-2xl text-white">{port.bateaux}</dd>
           </div>
-
-          <div>
-            <dt className="text-sm font-medium text-ocean-500">Bateaux amarrés</dt>
-            <dd className="text-ocean-900">{port.bateaux}</dd>
-          </div>
-
-          <div>
-            <dt className="text-sm font-medium text-ocean-500">Coordonnées</dt>
-            <dd className="text-ocean-900">{port.latitude}, {port.longitude}</dd>
+          <div className="px-4 py-4">
+            <dt className="text-xs font-medium uppercase tracking-wide text-ocean-300">Coordonnées</dt>
+            <dd className="mt-1 text-xs text-ocean-200">{port.latitude}, {port.longitude}</dd>
           </div>
         </dl>
       </div>
