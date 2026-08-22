@@ -5,6 +5,11 @@ namespace App\Controller;
 use App\Dto\BateauDto;
 use App\Entity\Boat;
 use App\Entity\Port;
+use App\Entity\Repair;
+use App\Entity\User;
+use App\Security\Voter\BoatVoter;
+use App\Service\CarnetPdfService;
+use App\Service\UploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,13 +26,27 @@ class BateauController extends AbstractController
         private EntityManagerInterface $em,
         private ValidatorInterface $validator,
         private SerializerInterface $serializer,
+        private UploadService $uploadService,
+        private CarnetPdfService $carnetPdfService,
     ) {
     }
 
     #[Route('', name: 'liste', methods: ['GET'])]
     public function liste(): JsonResponse
     {
-        $bateaux = $this->em->getRepository(Boat::class)->findAll();
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $utilisateur = $this->getUser();
+        $estProprietaireSeul = \in_array('ROLE_OWNER', $utilisateur->getRoles(), true)
+            && !\in_array('ROLE_ADMIN', $utilisateur->getRoles(), true)
+            && !\in_array('ROLE_RENTER', $utilisateur->getRoles(), true);
+
+        if ($estProprietaireSeul) {
+            $bateaux = $this->em->getRepository(Boat::class)->findBy(['owner' => $utilisateur], ['updatedAt' => 'DESC']);
+        } else {
+            $bateaux = $this->em->getRepository(Boat::class)->findBy([], ['updatedAt' => 'DESC']);
+        }
+
         $donnees = array_map(fn (Boat $bateau) => $this->serialiser($bateau), $bateaux);
 
         return $this->json($donnees, Response::HTTP_OK);
@@ -48,20 +67,53 @@ class BateauController extends AbstractController
     #[Route('', name: 'creer', methods: ['POST'])]
     public function creer(Request $request): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_OWNER');
+        if (!$this->isGranted('ROLE_OWNER') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException();
+        }
 
-        $dto = $this->serializer->deserialize($request->getContent(), BateauDto::class, 'json');
+        $dto = $request->request->count() > 0 || $request->files->count() > 0
+            ? $this->deserialiserDepuisFormulaire($request)
+            : $this->serializer->deserialize($request->getContent(), BateauDto::class, 'json');
 
         $erreurs = $this->validator->validate($dto);
         if (count($erreurs) > 0) {
             return $this->json($this->formaterErreurs($erreurs), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        $proprietaire = $this->getUser();
+        if (null !== $dto->proprietaireId) {
+            if (!$this->isGranted('ROLE_ADMIN')) {
+                return $this->json(['erreur' => 'Seul un administrateur peut créer un bateau pour un autre utilisateur.'], Response::HTTP_FORBIDDEN);
+            }
+
+            $proprietaire = $this->em->getRepository(User::class)->find($dto->proprietaireId);
+            if (!$proprietaire || !\in_array('ROLE_OWNER', $proprietaire->getRoles(), true)) {
+                return $this->json(['erreur' => 'Propriétaire introuvable.'], Response::HTTP_NOT_FOUND);
+            }
+        } elseif (!$this->isGranted('ROLE_OWNER')) {
+            return $this->json(['erreur' => 'Veuillez sélectionner un propriétaire pour ce bateau.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $photo = $request->files->get('photo');
+        $photoUrl = null;
+        if ($photo) {
+            try {
+                $photoUrl = $this->uploadService->uploaderPhotoBateau($photo);
+            } catch (\InvalidArgumentException $e) {
+                return $this->json(['erreur' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+        }
+
         $bateau = new Boat();
         $bateau->setName($dto->nom);
         $bateau->setType($dto->type);
         $bateau->setStatus($dto->statut);
-        $bateau->setOwner($this->getUser());
+        $bateau->setDescription($dto->description);
+        $bateau->setOwner($proprietaire);
+
+        if ($photoUrl) {
+            $bateau->setPhotoUrl($photoUrl);
+        }
 
         if ($dto->portId) {
             $port = $this->em->getRepository(Port::class)->find($dto->portId);
@@ -77,6 +129,22 @@ class BateauController extends AbstractController
         return $this->json($this->serialiser($bateau), Response::HTTP_CREATED);
     }
 
+    private function deserialiserDepuisFormulaire(Request $request): BateauDto
+    {
+        $dto = new BateauDto();
+        $dto->nom = (string) $request->request->get('nom', '');
+        $dto->type = (string) $request->request->get('type', '');
+        $dto->statut = (string) $request->request->get('statut', Boat::STATUS_AVAILABLE);
+        $portId = $request->request->get('portId');
+        $dto->portId = null !== $portId && '' !== $portId ? (int) $portId : null;
+        $description = $request->request->get('description');
+        $dto->description = null !== $description && '' !== $description ? (string) $description : null;
+        $proprietaireId = $request->request->get('proprietaireId');
+        $dto->proprietaireId = null !== $proprietaireId && '' !== $proprietaireId ? (int) $proprietaireId : null;
+
+        return $dto;
+    }
+
     #[Route('/{id}', name: 'modifier', methods: ['PUT'])]
     public function modifier(int $id, Request $request): JsonResponse
     {
@@ -86,7 +154,7 @@ class BateauController extends AbstractController
             return $this->json(['erreur' => 'Bateau introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        if ($bateau->getOwner() !== $this->getUser()) {
+        if (!$this->isGranted(BoatVoter::EDIT, $bateau)) {
             return $this->json(['erreur' => 'Accès refusé : vous n\'êtes pas le propriétaire de ce bateau.'], Response::HTTP_FORBIDDEN);
         }
 
@@ -97,9 +165,19 @@ class BateauController extends AbstractController
             return $this->json($this->formaterErreurs($erreurs), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        if (
+            Boat::STATUS_REPAIR === $bateau->getStatus()
+            && Boat::STATUS_REPAIR !== $dto->statut
+            && !$this->isGranted('ROLE_ADMIN')
+        ) {
+            return $this->json(['erreur' => 'Seul un administrateur peut changer le statut d\'un bateau en réparation.'], Response::HTTP_FORBIDDEN);
+        }
+
         $bateau->setName($dto->nom);
         $bateau->setType($dto->type);
         $bateau->setStatus($dto->statut);
+        $bateau->setDescription($dto->description);
+        $bateau->setUpdatedAt(new \DateTimeImmutable());
 
         if ($dto->portId) {
             $port = $this->em->getRepository(Port::class)->find($dto->portId);
@@ -114,7 +192,34 @@ class BateauController extends AbstractController
         return $this->json($this->serialiser($bateau), Response::HTTP_OK);
     }
 
-    #[Route('/{id}', name: 'supprimer', methods: ['DELETE'])]
+    #[Route('/lot', name: 'supprimer_lot', methods: ['DELETE'])]
+    public function supprimerLot(Request $request): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $donnees = json_decode($request->getContent(), true);
+        $ids = \is_array($donnees['ids'] ?? null) ? array_map('intval', $donnees['ids']) : [];
+
+        if (empty($ids)) {
+            return $this->json(['erreur' => 'Aucun identifiant fourni.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $bateaux = $this->em->getRepository(Boat::class)->findBy(['id' => $ids]);
+        $trouves = array_map(fn (Boat $b) => $b->getId(), $bateaux);
+        $introuvables = array_values(array_diff($ids, $trouves));
+
+        foreach ($bateaux as $bateau) {
+            $this->em->remove($bateau);
+        }
+        $this->em->flush();
+
+        return $this->json([
+            'supprimes' => $trouves,
+            'introuvables' => $introuvables,
+        ], Response::HTTP_OK);
+    }
+
+    #[Route('/{id}', name: 'supprimer', methods: ['DELETE'], requirements: ['id' => '\d+'])]
     public function supprimer(int $id): JsonResponse
     {
         $bateau = $this->em->getRepository(Boat::class)->find($id);
@@ -123,7 +228,7 @@ class BateauController extends AbstractController
             return $this->json(['erreur' => 'Bateau introuvable.'], Response::HTTP_NOT_FOUND);
         }
 
-        if ($bateau->getOwner() !== $this->getUser()) {
+        if (!$this->isGranted(BoatVoter::DELETE, $bateau)) {
             return $this->json(['erreur' => 'Accès refusé : vous n\'êtes pas le propriétaire de ce bateau.'], Response::HTTP_FORBIDDEN);
         }
 
@@ -133,6 +238,67 @@ class BateauController extends AbstractController
         return $this->json(['message' => 'Bateau supprimé avec succès.'], Response::HTTP_OK);
     }
 
+    #[Route('/{id}/photo', name: 'photo', methods: ['POST'])]
+    public function uploaderPhoto(int $id, Request $request): JsonResponse
+    {
+        $bateau = $this->em->getRepository(Boat::class)->find($id);
+
+        if (!$bateau) {
+            return $this->json(['erreur' => 'Bateau introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$this->isGranted(BoatVoter::EDIT, $bateau)) {
+            return $this->json(['erreur' => 'Accès refusé : vous n\'êtes pas le propriétaire de ce bateau.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $fichier = $request->files->get('photo');
+        if (!$fichier) {
+            return $this->json(['erreur' => 'Aucun fichier reçu.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $photoUrl = $this->uploadService->uploaderPhotoBateau($fichier);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['erreur' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $bateau->setPhotoUrl($photoUrl);
+        $bateau->setUpdatedAt(new \DateTimeImmutable());
+        $this->em->flush();
+
+        return $this->json($this->serialiser($bateau), Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/export-pdf', name: 'export_pdf', methods: ['GET'])]
+    public function exporterPdf(int $id): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $bateau = $this->em->getRepository(Boat::class)->find($id);
+
+        if (!$bateau) {
+            return $this->json(['erreur' => 'Bateau introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$this->isGranted(BoatVoter::EDIT, $bateau)) {
+            return $this->json(['erreur' => 'Accès refusé : vous n\'êtes pas le propriétaire de ce bateau.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $reparations = $this->em->getRepository(Repair::class)->findBy(
+            ['boat' => $bateau],
+            ['date' => 'DESC']
+        );
+
+        $pdf = $this->carnetPdfService->genererFicheBateau($bateau, $reparations);
+
+        $nomFichier = 'fiche-bateau-'.$bateau->getId().'.pdf';
+
+        return new Response($pdf, Response::HTTP_OK, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $nomFichier),
+        ]);
+    }
+
     private function serialiser(Boat $bateau): array
     {
         return [
@@ -140,7 +306,10 @@ class BateauController extends AbstractController
             'nom' => $bateau->getName(),
             'type' => $bateau->getType(),
             'statut' => $bateau->getStatus(),
+            'description' => $bateau->getDescription(),
+            'photoUrl' => $bateau->getPhotoUrl(),
             'creeLe' => $bateau->getCreatedAt()?->format('Y-m-d H:i:s'),
+            'misAJourLe' => $bateau->getUpdatedAt()?->format('Y-m-d H:i:s'),
             'proprietaire' => [
                 'id' => $bateau->getOwner()?->getId(),
                 'email' => $bateau->getOwner()?->getEmail(),
@@ -150,6 +319,11 @@ class BateauController extends AbstractController
                 'nom' => $bateau->getPort()->getName(),
                 'ville' => $bateau->getPort()->getCity(),
             ] : null,
+            'reparations' => array_map(fn ($r) => [
+                'id' => $r->getId(),
+                'description' => $r->getDescription(),
+                'date' => $r->getDate()?->format('Y-m-d'),
+            ], $bateau->getRepairs()->toArray()),
         ];
     }
 

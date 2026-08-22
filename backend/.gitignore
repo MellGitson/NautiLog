@@ -23,3 +23,10 @@
 /.php-cs-fixer.php
 /.php-cs-fixer.cache
 ###< friendsofphp/php-cs-fixer ###
+
+###> uploads ###
+/public/uploads/bateaux/*
+!/public/uploads/bateaux/.gitkeep
+/public/uploads/avatars/*
+!/public/uploads/avatars/.gitkeep
+###< uploads ###

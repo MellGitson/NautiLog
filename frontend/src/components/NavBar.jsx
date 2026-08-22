@@ -1,10 +1,22 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import api from '../services/api'
+import IconeCloche from './icons/IconeCloche'
+import RadarLogo from './RadarLogo'
 
 export default function NavBar() {
-  const { estConnecte, deconnexion } = useAuth()
+  const { estConnecte, aRole, user, deconnexion } = useAuth()
   const [menuOuvert, setMenuOuvert] = useState(false)
+  const [nombreNonLues, setNombreNonLues] = useState(0)
+  const estAdmin = aRole('ROLE_ADMIN')
+
+  useEffect(() => {
+    if (!estConnecte) return
+    api.get('/notifications')
+      .then((res) => setNombreNonLues(res.data.filter((n) => !n.lu).length))
+      .catch(() => {})
+  }, [estConnecte])
 
   const lien = ({ isActive }) =>
     `text-sm font-medium transition-colors ${
@@ -13,8 +25,10 @@ export default function NavBar() {
 
   const fermerMenu = () => setMenuOuvert(false)
 
+  const initiale = user?.email?.charAt(0).toUpperCase() ?? '?'
+
   return (
-    <header className="sticky top-0 z-10 border-b border-ocean-100 bg-white/80 backdrop-blur-md">
+    <header className="relief-eau sticky top-0 z-10 border-b border-ocean-100 bg-white/80 backdrop-blur-md">
       <a
         href="#contenu-principal"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ocean-700 focus:px-4 focus:py-2 focus:text-white"
@@ -23,16 +37,48 @@ export default function NavBar() {
       </a>
 
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <Link to="/" onClick={fermerMenu} className="flex items-center gap-2 font-display text-xl font-bold text-ocean-800 hover:text-ocean-800">
-          <span aria-hidden="true">⚓</span> NautiLog
-        </Link>
+        <div className="relative">
+          <span className="goutte-eau goutte-eau--claire pointer-events-none absolute -left-4 -top-4 h-4 w-4" aria-hidden="true" />
+          <span className="goutte-eau goutte-eau--claire pointer-events-none absolute -bottom-3 left-9 h-3 w-3" style={{ animationDelay: '1s' }} aria-hidden="true" />
+          <span className="goutte-eau goutte-eau--claire pointer-events-none absolute -right-3 -top-3 h-2.5 w-2.5" style={{ animationDelay: '2s' }} aria-hidden="true" />
+          <Link to="/" onClick={fermerMenu} className="relative flex items-center gap-2 font-display text-xl font-bold text-ocean-800 hover:text-ocean-800">
+            <RadarLogo /> NautiLog
+          </Link>
+        </div>
 
         <nav className="hidden items-center gap-6 sm:flex">
           {estConnecte ? (
             <>
               <NavLink to="/bateaux" className={lien}>Bateaux</NavLink>
               <NavLink to="/ports" className={lien}>Ports</NavLink>
-              <NavLink to="/trajets" className={lien}>Trajets</NavLink>
+              <NavLink to="/reservations" className={lien}>Réservations</NavLink>
+              <NavLink
+                to="/notifications"
+                aria-label="Notifications"
+                className={({ isActive }) =>
+                  `relative flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                    isActive ? 'text-coral-500' : 'text-ocean-700 hover:text-coral-500'
+                  }`
+                }
+              >
+                <IconeCloche active={nombreNonLues > 0} />
+                {nombreNonLues > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-coral-500 px-1 text-[10px] font-semibold text-white ring-2 ring-white">
+                    {nombreNonLues > 9 ? '9+' : nombreNonLues}
+                  </span>
+                )}
+              </NavLink>
+              {estAdmin && <NavLink to="/admin" className={lien}>Tableau de bord</NavLink>}
+              <Link
+                to="/profil"
+                title={estAdmin ? `${user?.email} (administrateur)` : user?.email}
+                aria-label="Mon profil"
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white transition-opacity hover:opacity-80 ${
+                  estAdmin ? 'bg-coral-500' : 'bg-ocean-500'
+                }`}
+              >
+                {initiale}
+              </Link>
               <button onClick={deconnexion} className="btn-ghost !px-4 !py-1.5 text-sm">
                 Se déconnecter
               </button>
@@ -64,7 +110,16 @@ export default function NavBar() {
             <>
               <NavLink to="/bateaux" className={lien} onClick={fermerMenu}>Bateaux</NavLink>
               <NavLink to="/ports" className={`${lien} py-2`} onClick={fermerMenu}>Ports</NavLink>
-              <NavLink to="/trajets" className={`${lien} py-2`} onClick={fermerMenu}>Trajets</NavLink>
+              <NavLink to="/reservations" className={`${lien} py-2`} onClick={fermerMenu}>Réservations</NavLink>
+              <NavLink to="/notifications" className={`${lien} py-2`} onClick={fermerMenu}>
+                Notifications {nombreNonLues > 0 && <span className="text-coral-500">({nombreNonLues})</span>}
+              </NavLink>
+              {estAdmin && (
+                <NavLink to="/admin" className={`${lien} py-2`} onClick={fermerMenu}>Admin</NavLink>
+              )}
+              <NavLink to="/profil" className={`${lien} py-2`} onClick={fermerMenu}>
+                Mon profil <span className="text-ocean-500">({user?.email}{estAdmin && ', administrateur'})</span>
+              </NavLink>
               <button
                 onClick={() => { deconnexion(); fermerMenu() }}
                 className="btn-ghost mt-2 !px-4 !py-1.5 text-sm"

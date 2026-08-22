@@ -13,5 +13,7 @@ COPY . .
 
 RUN composer install --no-interaction --optimize-autoloader 2>/dev/null || true
 
+RUN mkdir -p var && chown -R www-data:www-data var
+
 EXPOSE 9000
 CMD ["php-fpm"]

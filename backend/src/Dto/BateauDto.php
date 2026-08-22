@@ -29,4 +29,13 @@ class BateauDto
 
     #[Assert\Type(type: 'integer', message: "L'identifiant du port doit être un entier.")]
     public ?int $portId = null;
+
+    #[Assert\Length(
+        max: 2000,
+        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    public ?string $description = null;
+
+    #[Assert\Type(type: 'integer', message: "L'identifiant du propriétaire doit être un entier.")]
+    public ?int $proprietaireId = null;
 }

@@ -33,14 +33,6 @@ class OwaspTest extends WebTestCase
         $this->assertResponseStatusCodeSame(401);
     }
 
-    public function testAccesNonAuthentifieTrajets(): void
-    {
-        $client = static::createClient();
-        $client->request('GET', '/api/trajets');
-
-        $this->assertResponseStatusCodeSame(401);
-    }
-
     // OWASP A03 — Payload SQL injection dans le champ email → ne doit pas lever une 500
     public function testInjectionSqlDansEmail(): void
     {

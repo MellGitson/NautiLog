@@ -22,7 +22,7 @@ export default function CarteInteractive({ ports }) {
       center={CENTRE_MEDITERRANEE}
       zoom={ZOOM_INITIAL}
       scrollWheelZoom
-      className="h-[28rem] w-full rounded-2xl border border-ocean-100 shadow-sm"
+      className="relative z-0 h-[28rem] w-full overflow-hidden rounded-2xl border border-ocean-100 shadow-sm"
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
