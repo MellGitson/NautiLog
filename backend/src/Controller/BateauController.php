@@ -71,7 +71,7 @@ class BateauController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $dto = str_contains((string) $request->headers->get('Content-Type'), 'multipart/form-data')
+        $dto = $request->request->count() > 0 || $request->files->count() > 0
             ? $this->deserialiserDepuisFormulaire($request)
             : $this->serializer->deserialize($request->getContent(), BateauDto::class, 'json');
 
