@@ -2,6 +2,8 @@
 
 Carnet de navigation électronique intelligent, gestion de flotte et carte interactive de disponibilité.
 
+**Application en ligne :** https://nautilog.fr
+
 ## Stack technique
 
 - **Backend :** Symfony (API REST) + PostgreSQL
@@ -28,8 +30,12 @@ NautiLog/
 
 ## Comptes de test (jury)
 
-| Rôle         | Email                  | Mot de passe |
-|--------------|------------------------|--------------|
-| Admin        | admin@nautilog.fr      | À définir    |
-| Propriétaire | owner@nautilog.fr      | À définir    |
-| Locataire    | renter@nautilog.fr     | À définir    |
+Comptes réels créés en production sur https://nautilog.fr :
+
+| Rôle         | Email               | Mot de passe |
+|--------------|---------------------|--------------|
+| Admin        | mel@mail.com        | canacmell75  |
+| Propriétaire | joel@otmail.com     | jojodupont   |
+| Propriétaire | alice@yahoo.fr      | alicedupont  |
+| Locataire    | jean@gmail.com      | jeangabin    |
+| Locataire    | teddy@orange.fr     | teddyrinner  |
