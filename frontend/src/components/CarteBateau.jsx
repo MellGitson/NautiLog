@@ -18,7 +18,7 @@ export default function CarteBateau({ bateau, selection }) {
   const enReparation = bateau.statut === 'EN_RÉPARATION'
 
   return (
-    <article className={`relative card !p-0 flex flex-col overflow-hidden ${enReparation ? 'opacity-50' : ''} ${selection?.checked ? 'ring-2 ring-coral-500' : ''}`}>
+    <article className={`relative card !p-0 flex flex-col overflow-hidden ${selection?.checked ? 'ring-2 ring-coral-500' : ''}`}>
       {selection && (
         <label className="absolute left-2 top-2 z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-white/90 shadow-sm">
           <span className="sr-only">Sélectionner {bateau.nom}</span>
@@ -34,10 +34,10 @@ export default function CarteBateau({ bateau, selection }) {
         type="button"
         onClick={() => setZoom(true)}
         aria-label={`Agrandir la photo de ${bateau.nom}`}
-        className="photo-frame focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean-400 focus-visible:ring-inset"
+        className={`photo-frame focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean-400 focus-visible:ring-inset ${enReparation ? 'opacity-60' : ''}`}
       >
         <img src={photo} alt={`${bateau.nom} (${bateau.type})`} loading="lazy" />
-        <span className="absolute right-2 top-2 badge bg-white/85 text-ocean-700 backdrop-blur-sm">
+        <span className="absolute right-2 top-2 badge bg-white/90 text-ocean-700">
           {bateau.type}
         </span>
         {estMonBateau && (

@@ -26,3 +26,7 @@ services:
     App\Service\UploadService:
         arguments:
             $uploadDir: '%kernel.project_dir%/public/uploads'
+
+    App\Service\MailService:
+        arguments:
+            $contactDestinataire: '%env(CONTACT_DESTINATAIRE)%'

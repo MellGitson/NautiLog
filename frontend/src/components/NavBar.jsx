@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 import IconeCloche from './icons/IconeCloche'
+import RadarLogo from './RadarLogo'
 
 export default function NavBar() {
   const { estConnecte, aRole, user, deconnexion } = useAuth()
@@ -27,7 +28,7 @@ export default function NavBar() {
   const initiale = user?.email?.charAt(0).toUpperCase() ?? '?'
 
   return (
-    <header className="sticky top-0 z-10 border-b border-ocean-100 bg-white/80 backdrop-blur-md">
+    <header className="relief-eau sticky top-0 z-10 border-b border-ocean-100 bg-white/80 backdrop-blur-md">
       <a
         href="#contenu-principal"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ocean-700 focus:px-4 focus:py-2 focus:text-white"
@@ -36,9 +37,14 @@ export default function NavBar() {
       </a>
 
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <Link to="/" onClick={fermerMenu} className="flex items-center gap-2 font-display text-xl font-bold text-ocean-800 hover:text-ocean-800">
-          <span aria-hidden="true">⚓</span> NautiLog
-        </Link>
+        <div className="relative">
+          <span className="goutte-eau goutte-eau--claire pointer-events-none absolute -left-4 -top-4 h-4 w-4" aria-hidden="true" />
+          <span className="goutte-eau goutte-eau--claire pointer-events-none absolute -bottom-3 left-9 h-3 w-3" style={{ animationDelay: '1s' }} aria-hidden="true" />
+          <span className="goutte-eau goutte-eau--claire pointer-events-none absolute -right-3 -top-3 h-2.5 w-2.5" style={{ animationDelay: '2s' }} aria-hidden="true" />
+          <Link to="/" onClick={fermerMenu} className="relative flex items-center gap-2 font-display text-xl font-bold text-ocean-800 hover:text-ocean-800">
+            <RadarLogo /> NautiLog
+          </Link>
+        </div>
 
         <nav className="hidden items-center gap-6 sm:flex">
           {estConnecte ? (

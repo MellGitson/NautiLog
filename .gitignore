@@ -32,3 +32,9 @@ Thumbs.db
 
 # Fichiers locaux non versionnés
 DirectivesetLivrables.md
+.claude/
+
+# Impeccable (outil design local, non versionné)
+PRODUCT.md
+DESIGN.md
+.impeccable/

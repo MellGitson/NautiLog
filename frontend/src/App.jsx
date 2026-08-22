@@ -2,9 +2,9 @@ import { Routes, Route } from 'react-router-dom'
 import RouteProtegee from './components/RouteProtegee'
 import NavBar from './components/NavBar'
 import Footer from './components/Footer'
+import GouttesEau from './components/GouttesEau'
 import Accueil from './pages/Accueil'
-import Connexion from './pages/Connexion'
-import Inscription from './pages/Inscription'
+import Auth from './pages/Auth'
 import ListeBateaux from './pages/ListeBateaux'
 import NouveauBateau from './pages/NouveauBateau'
 import DetailBateau from './pages/DetailBateau'
@@ -26,6 +26,7 @@ import NotFound from './pages/NotFound'
 export default function App() {
   return (
     <>
+      <GouttesEau />
       <NavBar />
       <Routes>
         <Route
@@ -51,10 +52,10 @@ export default function App() {
               <div id="contenu-principal" className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
                 <Routes>
                   <Route path="/"            element={<Accueil />} />
-                  <Route path="/connexion"   element={<Connexion />} />
-                  <Route path="/inscription" element={<Inscription />} />
+                  <Route path="/connexion"   element={<Auth />} />
+                  <Route path="/inscription" element={<Auth />} />
                   <Route path="/bateaux"          element={<RouteProtegee><ListeBateaux /></RouteProtegee>} />
-                  <Route path="/bateaux/nouveau"  element={<RouteProtegee role="ROLE_OWNER"><NouveauBateau /></RouteProtegee>} />
+                  <Route path="/bateaux/nouveau"  element={<RouteProtegee role={['ROLE_OWNER', 'ROLE_ADMIN']}><NouveauBateau /></RouteProtegee>} />
                   <Route path="/bateaux/:id"      element={<RouteProtegee><DetailBateau /></RouteProtegee>} />
                   <Route path="/ports"            element={<RouteProtegee><ListePorts /></RouteProtegee>} />
                   <Route path="/ports/:id"        element={<RouteProtegee><DetailPort /></RouteProtegee>} />

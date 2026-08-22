@@ -113,15 +113,18 @@ export default function Profil() {
 
   return (
     <main className="mx-auto max-w-md">
-      <div className="card">
-        <h1 className="text-center">Mon profil</h1>
+      <div className="card !p-0 overflow-hidden">
+        <div className="relative flex flex-col items-center bg-gradient-to-br from-ocean-950 via-ocean-900 to-ocean-700 px-6 pb-16 pt-8 text-white">
+          <h1 className="text-white">Mon profil</h1>
+          <p className="mt-1 text-sm text-ocean-300">{profil.email}</p>
+        </div>
 
-        <div className="mt-6 flex flex-col items-center">
+        <div className="-mt-12 flex flex-col items-center px-6">
           <div className="relative">
             {profil.avatarUrl ? (
-              <img src={profil.avatarUrl} alt="Avatar" className="h-24 w-24 rounded-full object-cover" />
+              <img src={profil.avatarUrl} alt="Avatar" className="h-24 w-24 rounded-full object-cover ring-4 ring-white" />
             ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-ocean-500 text-3xl font-semibold text-white">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-ocean-500 text-3xl font-semibold text-white ring-4 ring-white">
                 {initiale}
               </div>
             )}
@@ -131,7 +134,7 @@ export default function Profil() {
               disabled={enCoursPhoto}
               aria-label="Changer la photo de profil"
               title="Changer la photo de profil"
-              className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full bg-ocean-600 text-white shadow-md transition-colors hover:bg-ocean-700 disabled:opacity-60"
+              className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full bg-coral-500 text-white shadow-md transition-colors hover:bg-coral-600 disabled:opacity-60"
             >
               {enCoursPhoto ? (
                 <span className="text-xs">…</span>
@@ -153,7 +156,7 @@ export default function Profil() {
           {erreurPhoto && <p role="alert" className="mt-2 text-sm font-medium text-coral-600">{erreurPhoto}</p>}
         </div>
 
-        <div className="mt-6">
+        <div className="px-6 pb-6 pt-6">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-ocean-500">Informations personnelles</p>
             {!modeEdition && (
@@ -238,7 +241,7 @@ export default function Profil() {
           )}
         </div>
 
-        <div className="mt-8 border-t border-ocean-100 pt-4 text-center">
+        <div className="border-t border-ocean-100 px-6 py-4 text-center">
           <button
             type="button"
             onClick={() => setConfirmationSuppression(true)}

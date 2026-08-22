@@ -10,10 +10,47 @@ const LABELS_STATUT = {
   ANNULEE: 'Annulée',
 }
 
-const BADGES_STATUT = {
-  EN_ATTENTE: 'badge bg-amber-100 text-amber-700',
-  CONFIRMEE: 'badge-disponible',
-  ANNULEE: 'badge bg-ocean-100 text-ocean-500',
+const STYLE_STATUT = {
+  EN_ATTENTE: 'bg-amber-100 text-amber-800',
+  CONFIRMEE: 'bg-emerald-100 text-emerald-800',
+  ANNULEE: 'bg-ocean-50 text-ocean-400',
+}
+
+function IconeCalendrier() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 shrink-0" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4" />
+      <path d="M8 2v4" />
+      <path d="M3 10h18" />
+    </svg>
+  )
+}
+
+function IconeCheck() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  )
+}
+
+function IconeCroix() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+      <path d="M18 6 6 18" />
+      <path d="M6 6l12 12" />
+    </svg>
+  )
+}
+
+function IconeDrapeau() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+      <path d="M4 22V4" />
+      <path d="M4 4h14l-2 4 2 4H4" />
+    </svg>
+  )
 }
 
 export default function ListeReservations({ reservations, utilisateur, onMiseAJour }) {
@@ -82,7 +119,7 @@ export default function ListeReservations({ reservations, utilisateur, onMiseAJo
               const estLocataire = r.locataire.email === utilisateur?.email
               const peutConfirmer = !estLocataire && r.statut === 'EN_ATTENTE'
               const peutAnnuler = r.statut !== 'ANNULEE'
-              const peutSignaler = !estLocataire && !aRole('ROLE_ADMIN')
+              const peutSignaler = !aRole('ROLE_ADMIN')
 
               return (
                 <tr key={r.id}>
@@ -92,20 +129,35 @@ export default function ListeReservations({ reservations, utilisateur, onMiseAJo
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-ocean-700">{r.locataire.email}</td>
-                  <td className="px-4 py-3 text-ocean-700">{r.dateDebut} → {r.dateFin}</td>
                   <td className="px-4 py-3">
-                    <span className={BADGES_STATUT[r.statut]}>{LABELS_STATUT[r.statut]}</span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-ocean-50 px-2.5 py-1 text-xs font-medium text-ocean-700">
+                      <IconeCalendrier />
+                      {r.dateDebut} <span className="text-ocean-400">→</span> {r.dateFin}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-3">
+                    <span className={`inline-flex animate-fade-in items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${STYLE_STATUT[r.statut]}`}>
+                      {r.statut === 'EN_ATTENTE' && (
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500 opacity-75" />
+                          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-500" />
+                        </span>
+                      )}
+                      {LABELS_STATUT[r.statut]}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="inline-flex items-center gap-0.5 rounded-lg border border-ocean-100 bg-white p-0.5">
                       {peutConfirmer && (
                         <button
                           type="button"
                           onClick={() => changerStatut(r, 'CONFIRMEE')}
                           disabled={enCours === r.id}
-                          className="text-sm font-medium text-ocean-600 hover:text-coral-500"
+                          title="Confirmer la réservation"
+                          aria-label="Confirmer la réservation"
+                          className="flex h-7 w-7 items-center justify-center rounded-md text-emerald-500 transition-all duration-150 hover:scale-110 hover:bg-emerald-500 hover:text-white disabled:opacity-40 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:hover:text-emerald-500"
                         >
-                          Confirmer
+                          <IconeCheck />
                         </button>
                       )}
                       {peutAnnuler && (
@@ -113,19 +165,26 @@ export default function ListeReservations({ reservations, utilisateur, onMiseAJo
                           type="button"
                           onClick={() => changerStatut(r, 'ANNULEE')}
                           disabled={enCours === r.id}
-                          className="text-sm font-medium text-coral-600 hover:text-coral-700"
+                          title="Annuler la réservation"
+                          aria-label="Annuler la réservation"
+                          className="flex h-7 w-7 items-center justify-center rounded-md text-coral-400 transition-all duration-150 hover:scale-110 hover:bg-coral-500 hover:text-white disabled:opacity-40 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:hover:text-coral-400"
                         >
-                          Annuler
+                          <IconeCroix />
                         </button>
                       )}
                       {peutSignaler && signalementOuvert !== r.id && (
                         <button
                           type="button"
                           onClick={() => ouvrirSignalement(r.id)}
-                          className="text-sm font-medium text-ocean-600 hover:text-coral-500"
+                          title="Signaler un problème"
+                          aria-label="Signaler un problème"
+                          className="flex h-7 w-7 items-center justify-center rounded-md text-ocean-500 transition-all duration-150 hover:scale-110 hover:bg-ocean-500 hover:text-white"
                         >
-                          Signaler un problème
+                          <IconeDrapeau />
                         </button>
+                      )}
+                      {!peutConfirmer && !peutAnnuler && !(peutSignaler && signalementOuvert !== r.id) && (
+                        <span className="px-2 py-1 text-xs text-ocean-300">—</span>
                       )}
                     </div>
 

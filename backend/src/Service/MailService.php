@@ -14,6 +14,7 @@ class MailService
     public function __construct(
         private MailerInterface $mailer,
         private LoggerInterface $logger,
+        private string $contactDestinataire,
     ) {
     }
 
@@ -37,6 +38,34 @@ class MailService
                 'destinataire' => $destinataire,
                 'exception' => $e->getMessage(),
             ]);
+        }
+    }
+
+    public function envoyerMessageContact(string $nom, string $expediteur, string $message): bool
+    {
+        $email = (new Email())
+            ->from(self::EXPEDITEUR)
+            ->to($this->contactDestinataire)
+            ->replyTo($expediteur)
+            ->subject(\sprintf('NautiLog — Nouveau message de contact de %s', $nom))
+            ->text(
+                "Nouveau message via le formulaire de contact du site.\n\n"
+                ."Nom : {$nom}\n"
+                ."Email : {$expediteur}\n\n"
+                ."Message :\n{$message}"
+            );
+
+        try {
+            $this->mailer->send($email);
+
+            return true;
+        } catch (TransportExceptionInterface $e) {
+            $this->logger->error('Échec de l\'envoi de l\'email de contact.', [
+                'expediteur' => $expediteur,
+                'exception' => $e->getMessage(),
+            ]);
+
+            return false;
         }
     }
 }

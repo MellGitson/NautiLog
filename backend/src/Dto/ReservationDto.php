@@ -15,4 +15,7 @@ class ReservationDto
 
     #[Assert\NotBlank(message: 'La date de fin est obligatoire.')]
     public string $dateFin = '';
+
+    #[Assert\Type(type: 'integer', message: "L'identifiant du locataire doit être un entier.")]
+    public ?int $locataireId = null;
 }

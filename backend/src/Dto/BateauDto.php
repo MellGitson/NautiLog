@@ -35,4 +35,7 @@ class BateauDto
         maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.'
     )]
     public ?string $description = null;
+
+    #[Assert\Type(type: 'integer', message: "L'identifiant du propriétaire doit être un entier.")]
+    public ?int $proprietaireId = null;
 }

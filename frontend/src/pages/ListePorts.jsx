@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import CartePort from '../components/CartePort'
 import CarteInteractive from '../components/CarteInteractive'
 import MeteoPort from '../components/MeteoPort'
+import SphereRotative from '../components/SphereRotative'
 import api from '../services/api'
 
 export default function ListePorts() {
@@ -46,22 +47,24 @@ export default function ListePorts() {
       )}
 
       {!chargement && !erreur && ports.length > 0 && vue === 'carte' && (
-        <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
+        <div className="grid gap-6 lg:grid-cols-[9rem_1fr_18rem]">
+          <div className="hidden items-start justify-center pt-2 lg:flex">
+            <SphereRotative />
+          </div>
+
           <CarteInteractive ports={ports} />
 
-          <aside className="card flex h-[28rem] flex-col">
-            <h2 className="mb-3 shrink-0 text-sm font-semibold text-ocean-800">Météo des ports</h2>
-            <div className="flex-1 space-y-3 overflow-y-auto pr-1">
+          <aside className="flex h-[28rem] flex-col overflow-hidden rounded-2xl bg-gradient-to-br from-ocean-950 via-ocean-900 to-ocean-700 text-white">
+            <h2 className="shrink-0 px-5 pt-5 text-xs font-semibold uppercase tracking-wide text-ocean-300">Météo des ports</h2>
+            <div className="mt-3 flex-1 divide-y divide-ocean-700/60 overflow-y-auto">
               {ports.map((port) => (
-                <div key={port.id} className="border-t border-ocean-100 pt-3 first:border-0 first:pt-0">
-                  <Link to={`/ports/${port.id}`} className="text-sm font-medium">
-                    {port.nom}
-                  </Link>
-                  <p className="text-xs text-ocean-500">{port.ville}</p>
-                  <div className="mt-1">
-                    <MeteoPort portId={port.id} />
+                <Link key={port.id} to={`/ports/${port.id}`} className="block px-5 py-3.5 transition-colors hover:bg-white/5">
+                  <p className="text-sm font-semibold text-white">{port.nom}</p>
+                  <p className="text-xs text-ocean-300">{port.ville}</p>
+                  <div className="mt-1.5">
+                    <MeteoPort portId={port.id} sombre />
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </aside>
