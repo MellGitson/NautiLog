@@ -11,7 +11,7 @@ App\Entity\Boat:
         type: '<randomElement(["Voilier", "Catamaran", "Yacht", "Bateau à moteur", "Vedette"])>'
         status: 'LOUÉ'
         owner: '@user_owner_<randomElement([1, 2, 3, 4, 5])>'
-        port: '@port_<randomElement([brest, bordeaux, lorient])>'
+        port: '@port_<randomElement([marseille, nice, toulon, cannes, sete])>'
 
     boat_{11..15}:
         name: '<randomElement(["Vieux Loup", "Alizé", "La Caravelle", "Marin d''Eau Douce", "Typhon", "Swell", "Pacific", "Aquila", "Mercure", "Atlas"])> <current()>'

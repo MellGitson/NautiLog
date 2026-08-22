@@ -31,11 +31,40 @@ export default {
         },
       },
       fontFamily: {
-        display: ['"Playfair Display"', 'serif'],
-        sans: ['"Inter"', 'system-ui', 'sans-serif'],
+        display: ['"Fraunces"', 'serif'],
+        sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'ocean-gradient': 'linear-gradient(135deg, #daf1f7 0%, #ffffff 45%, #ffe1d6 100%)',
+      },
+      keyframes: {
+        'fade-in': {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+        'scale-in': {
+          from: { opacity: 0, transform: 'scale(0.95)' },
+          to: { opacity: 1, transform: 'scale(1)' },
+        },
+        'wave-shine': {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-6px)' },
+        },
+        'slide-in': {
+          from: { opacity: 0, transform: 'translateX(12px)' },
+          to: { opacity: 1, transform: 'translateX(0)' },
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 0.2s ease-out',
+        'scale-in': 'scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+        'wave-shine': 'wave-shine 2.5s linear infinite',
+        float: 'float 3s ease-in-out infinite',
+        'slide-in': 'slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
       },
     },
   },
