@@ -149,7 +149,7 @@ class BerthController extends AbstractController
             return [null, null];
         }
 
-        $decalage = fn () => (random_int(-30, 30) / 100000);
+        $decalage = fn () => random_int(-30, 30) / 100000;
 
         $latitude = (float) $port->getLatitude() + $decalage();
         $longitude = (float) $port->getLongitude() + $decalage();
