@@ -59,7 +59,7 @@
   }
 
   .btn-accent {
-    @apply btn bg-coral-500 text-white hover:bg-coral-600;
+    @apply btn bg-teal-500 text-white hover:bg-teal-600;
   }
 
   .btn-ghost {
