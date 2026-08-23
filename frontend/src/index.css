@@ -194,6 +194,53 @@
     font-size: 34px;
   }
 
+  .badge-neon {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.55) 0, #fff 10%, rgba(255, 255, 255, 0.55) 20%);
+    background-size: 200px 100%;
+    background-position: 0;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: badge-neon-shine 3s infinite linear;
+  }
+
+  @keyframes badge-neon-shine {
+    0% { background-position: 0; }
+    60% { background-position: 180px; }
+    100% { background-position: 180px; }
+  }
+
+  .badge-neon::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.65), transparent);
+    box-shadow: 0 0 16px 4px rgba(255, 255, 255, 0.6);
+    animation: badge-neon-onde 3s ease-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes badge-neon-onde {
+    0% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    60% {
+      transform: translateX(250%);
+      opacity: 1;
+    }
+    70%, 100% {
+      transform: translateX(250%);
+      opacity: 0;
+    }
+  }
+
   .holo-ancre--moyenne {
     width: 80px;
     height: 80px;
