@@ -27,7 +27,7 @@ export default function Accueil() {
         <span className="goutte-eau goutte-eau--sombre pointer-events-none absolute bottom-[4%] left-[24%] h-12 w-12" style={{ animationDelay: '2.4s' }} aria-hidden="true" />
 
         <div className="relative z-10 space-y-4">
-          <span className="badge bg-white/15 text-white ring-1 ring-inset ring-white/30 backdrop-blur-sm">
+          <span className="badge badge-neon bg-white/15 ring-1 ring-inset ring-white/30 backdrop-blur-sm">
             Gestion de flotte intelligente
           </span>
           <h1 className="max-w-2xl text-white drop-shadow-sm">
