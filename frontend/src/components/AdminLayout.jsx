@@ -16,14 +16,14 @@ export default function AdminLayout() {
     }`
 
   return (
-    <div className="mx-auto flex max-w-7xl gap-6 px-6 py-10">
-      <aside className="w-48 shrink-0">
-        <h2 className="mb-3 px-4 text-xs font-semibold uppercase tracking-wide text-ocean-400">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 lg:flex-row">
+      <aside className="lg:w-48 lg:shrink-0">
+        <h2 className="mb-3 px-4 text-xs font-semibold uppercase tracking-wide text-ocean-400 lg:block">
           Administration
         </h2>
-        <nav className="flex flex-col gap-1">
+        <nav className="flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
           {SECTIONS.map((s) => (
-            <NavLink key={s.to} to={s.to} end={s.fin} className={lienSidebar}>
+            <NavLink key={s.to} to={s.to} end={s.fin} className={`${lienSidebar} whitespace-nowrap`}>
               {s.label}
             </NavLink>
           ))}
