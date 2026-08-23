@@ -51,7 +51,7 @@ services:
     container_name: nautilog_client
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:80"]
       interval: 5s
       timeout: 3s
       retries: 10
