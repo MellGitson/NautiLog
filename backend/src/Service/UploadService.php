@@ -49,7 +49,7 @@ class UploadService
         try {
             $fichier->move($this->uploadDir.'/'.$sousDossier, $nomFichier);
         } catch (FileException $e) {
-            throw new \RuntimeException("Erreur lors de l'enregistrement du fichier.", 0, $e);
+            throw new \RuntimeException("Erreur lors de l'enregistrement du fichier : ".$e->getMessage(), 0, $e);
         }
 
         return '/uploads/'.$sousDossier.'/'.$nomFichier;
